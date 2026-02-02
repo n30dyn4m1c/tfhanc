@@ -1,0 +1,76 @@
+{% load static wagtailcore_tags wagtailuserbar %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>
+            {% block title %}
+                {% if page.seo_title %}{{ page.seo_title }}{% else %}{{ page.title }}{% endif %}
+            {% endblock %}
+            {% if not is_homepage %} | {{ wagtail_site_name }}{% endif %}
+        </title>
+        {% if page.search_description %}
+            <meta name="description" content="{{ page.search_description }}" />
+        {% endif %}
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/site.css' %}">
+
+        {% block extra_css %}
+        {% endblock %}
+    </head>
+
+    <body class="{% block body_class %}{% endblock %}">
+        {% wagtailuserbar %}
+
+        <header class="header">
+            <div class="container nav">
+                <a href="/" class="logo">TFHANC</a>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/media/">Media Hub</a></li>
+                    <li><a href="/giving/">Giving</a></li>
+                    <li><a href="/connect/">Connect</a></li>
+                </ul>
+            </div>
+        </header>
+
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="footer">
+            <div class="container footer-content">
+                <div>
+                    <h4>TFHANC</h4>
+                    <p>Executing the Mandate. Advancing the Kingdom. It is NOW!</p>
+                </div>
+                <div>
+                    <h4>Service Times</h4>
+                    <p>Sunday 9:00 AM – 1:30 PM</p>
+                </div>
+                <div>
+                    <h4>Location</h4>
+                    <p>Gordon International School Hall,</p>
+                    <p>Port Moresby</p>
+                    <a href="https://maps.google.com" style="color: var(--royal-purple); text-decoration: none;">View on Google Maps</a>
+                </div>
+                <div>
+                    <h4>Follow Us</h4>
+                    <a href="https://facebook.com/tfhanc" style="color: var(--white); text-decoration: none;">Facebook</a>
+                </div>
+            </div>
+            <div class="container" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; text-align: center; opacity: 0.5; font-size: 0.8rem;">
+                <p>&copy; 2026 The Father's House, All Nations Church. All Rights Reserved.</p>
+            </div>
+        </footer>
+
+        <script type="text/javascript" src="{% static 'js/tfhanc.js' %}"></script>
+        {% block extra_js %}
+        {% endblock %}
+    </body>
+</html>

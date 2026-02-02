@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block content %}
+<section class="container" style="padding: 100px 0; text-align: center;">
+    <div style="max-width: 700px; margin: 0 auto;">
+        <h1 style="color: var(--royal-purple); font-size: 3.5rem; margin-bottom: 2rem;">Giving</h1>
+        <div style="font-size: 1.2rem; margin-bottom: 3rem;">
+            {{ self.intro|richtext }}
+        </div>
+
+        <div
+            style="background: var(--white); padding: 4rem; border-radius: 30px; box-shadow: 0 20px 50px rgba(120, 81, 169, 0.1); border: 2px solid var(--mist-grey);">
+            <h2 style="margin-bottom: 2rem;">Tithes & Offerings</h2>
+            <div style="font-size: 1.1rem; text-align: left; margin-bottom: 3rem;">
+                {{ self.giving_text|richtext }}
+            </div>
+
+            <a href="#" class="btn" style="font-size: 1.2rem; padding: 1.2rem 3rem;">Give Online via Secure Portal</a>
+            <p style="margin-top: 2rem; font-size: 0.8rem; opacity: 0.6;">🔒 SSL Secured Transaction</p>
+        </div>
+
+        <div style="margin-top: 4rem; opacity: 0.7;">
+            <p>"Give, and it will be given to you. A good measure, pressed down, shaken together and running over, will
+                be poured into your lap." — Luke 6:38</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
