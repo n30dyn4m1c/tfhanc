@@ -1,4 +1,4 @@
-{% load static wagtailcore_tags wagtailuserbar %}
+{% load static wagtailcore_tags wagtailuserbar wagtailsettings_tags %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -30,11 +30,17 @@
         <header class="header">
             <div class="container nav">
                 <a href="/" class="logo">TFHANC</a>
+                <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation">
+                <label for="nav-toggle" class="nav-toggle-label">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </label>
                 <ul class="nav-links">
                     <li><a href="/">Home</a></li>
-                    <li><a href="/media/">Media Hub</a></li>
-                    <li><a href="/giving/">Giving</a></li>
-                    <li><a href="/connect/">Connect</a></li>
+                    <li><a href="{% slugurl 'media' %}">Media Hub</a></li>
+                    <li><a href="{% slugurl 'giving' %}">Giving</a></li>
+                    <li><a href="{% slugurl 'connect' %}">Connect</a></li>
                 </ul>
             </div>
         </header>
@@ -43,29 +49,34 @@
             {% block content %}{% endblock %}
         </main>
 
+        {% get_settings %}
         <footer class="footer">
             <div class="container footer-content">
                 <div>
                     <h4>TFHANC</h4>
-                    <p>Executing the Mandate. Advancing the Kingdom. It is NOW!</p>
+                    <p>{{ settings.home.SiteSettings.tagline }}</p>
                 </div>
                 <div>
                     <h4>Service Times</h4>
-                    <p>Sunday 9:00 AM – 1:30 PM</p>
+                    <p>{{ settings.home.SiteSettings.service_times }}</p>
                 </div>
                 <div>
                     <h4>Location</h4>
-                    <p>Gordon International School Hall,</p>
-                    <p>Port Moresby</p>
-                    <a href="https://maps.google.com" style="color: var(--royal-purple); text-decoration: none;">View on Google Maps</a>
+                    <p>{{ settings.home.SiteSettings.location_line_1 }}</p>
+                    <p>{{ settings.home.SiteSettings.location_line_2 }}</p>
+                    {% if settings.home.SiteSettings.google_maps_url %}
+                    <a href="{{ settings.home.SiteSettings.google_maps_url }}" class="footer-map-link">View on Google Maps</a>
+                    {% endif %}
                 </div>
                 <div>
                     <h4>Follow Us</h4>
-                    <a href="https://facebook.com/tfhanc" style="color: var(--white); text-decoration: none;">Facebook</a>
+                    {% if settings.home.SiteSettings.facebook_url %}
+                    <a href="{{ settings.home.SiteSettings.facebook_url }}" class="footer-social-link">Facebook</a>
+                    {% endif %}
                 </div>
             </div>
-            <div class="container" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; text-align: center; opacity: 0.5; font-size: 0.8rem;">
-                <p>&copy; 2026 The Father's House, All Nations Church. All Rights Reserved.</p>
+            <div class="container footer-bottom">
+                <p>&copy; {{ settings.home.SiteSettings.copyright_text }}</p>
             </div>
         </footer>
 

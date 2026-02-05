@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block content %}
+<article class="section-padded">
+    <div class="content-narrow">
+        <span class="media-category">{{ self.category }}</span>
+        <h1 class="message-title">{{ self.title }}</h1>
+        <p class="message-date">{{ self.date|date:"F j, Y" }}</p>
+
+        <div class="video-container message-video">
+            <iframe src="{{ self.youtube_url }}" frameborder="0" allowfullscreen></iframe>
+        </div>
+
+        <div class="message-transcription">
+            <h2 class="message-transcription__heading">Transcription & Notes</h2>
+            <div class="richtext message-transcription__body">
+                {{ self.transcription|richtext }}
+            </div>
+        </div>
+
+        {% if self.topics.all %}
+        <div class="message-topics">
+            <span class="message-topics__label">Topics:</span>
+            <div class="message-topics__list">
+                {% for topic in self.topics.all %}
+                <span class="topic-tag">#{{ topic.name }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</article>
+{% endblock %}

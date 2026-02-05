@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "search",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
+    "wagtail.contrib.settings",
     "wagtail.embeds",
     "wagtail.sites",
     "wagtail.users",
@@ -77,6 +78,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "wagtail.contrib.settings.context_processors.settings",
             ],
         },
     },
@@ -142,8 +144,8 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / "static"
 STATIC_URL = "/static/"
 
-MEDIA_ROOT = BASE_DIR / "media"
-MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "uploads"
+MEDIA_URL = "/uploads/"
 
 # Default storage settings
 # See https://docs.djangoproject.com/en/6.0/ref/settings/#std-setting-STORAGES

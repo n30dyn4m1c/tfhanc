@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block content %}
+<section class="section-padded">
+    <div class="content-narrow text-center">
+        <h1 class="page-title">Thank You</h1>
+        <div class="form-container">
+            {{ self.thank_you_text|richtext }}
+            <a href="/" class="btn" style="margin-top: 2rem;">Return Home</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

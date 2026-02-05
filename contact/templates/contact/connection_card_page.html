@@ -2,64 +2,35 @@
 {% load wagtailcore_tags %}
 
 {% block content %}
-<section class="container" style="padding: 100px 0;">
-    <div style="max-width: 800px; margin: 0 auto;">
-        <h1 style="color: var(--royal-purple); font-size: 3.5rem; margin-bottom: 2rem; text-align: center;">Digital
-            Connection Card</h1>
-        <div style="font-size: 1.2rem; margin-bottom: 3.5rem; text-align: center; opacity: 0.8;">
+<section class="section-padded">
+    <div class="content-narrow">
+        <h1 class="page-title text-center">Digital Connection Card</h1>
+        <div class="form-intro text-center">
             {{ self.intro|richtext }}
         </div>
 
-        <div style="background: var(--mist-grey); padding: 4rem; border-radius: 40px;">
+        <div class="form-container">
             <form action="{% pageurl self %}" method="POST">
                 {% csrf_token %}
-                <div style="display: grid; gap: 1.5rem;">
+                <div class="form-grid">
                     {% for field in form %}
                     <div class="form-group">
-                        <label
-                            style="display: block; font-weight: 700; margin-bottom: 0.5rem; color: var(--royal-purple);">{{
-                            field.label }}</label>
-                        <div style="width: 100%;">
+                        <label class="form-label">{{ field.label }}</label>
+                        <div class="form-field">
                             {{ field }}
                         </div>
                         {% if field.help_text %}
-                        <small style="display: block; margin-top: 0.3rem; opacity: 0.6;">{{ field.help_text }}</small>
+                        <small class="form-help">{{ field.help_text }}</small>
                         {% endif %}
                         {% for error in field.errors %}
-                        <p style="color: red; font-size: 0.8rem; margin-top: 0.3rem;">{{ error }}</p>
+                        <p class="form-error">{{ error }}</p>
                         {% endfor %}
                     </div>
                     {% endfor %}
                 </div>
-                <button type="submit" class="btn"
-                    style="width: 100%; margin-top: 3rem; font-size: 1.2rem; padding: 1.2rem;">Send Connection
-                    Card</button>
+                <button type="submit" class="btn form-submit">Send Connection Card</button>
             </form>
         </div>
     </div>
 </section>
-
-<style>
-    input,
-    textarea,
-    select {
-        width: 100%;
-        padding: 1rem;
-        border: 2px solid white;
-        border-radius: 12px;
-        background: white;
-        font-family: inherit;
-        font-size: 1rem;
-        transition: var(--transition);
-        box-sizing: border-box;
-    }
-
-    input:focus,
-    textarea:focus,
-    select:focus {
-        outline: none;
-        border-color: var(--royal-purple);
-        box-shadow: 0 0 0 4px rgba(120, 81, 169, 0.1);
-    }
-</style>
 {% endblock %}

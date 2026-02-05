@@ -5,14 +5,19 @@ from wagtail.admin.panels import (
     InlinePanel, MultiFieldPanel
 )
 from wagtail.fields import RichTextField
+from wagtail.search import index
 from wagtail.contrib.forms.models import AbstractEmailForm, AbstractFormField
+
 
 class FormField(AbstractFormField):
     page = ParentalKey('ConnectionCardPage', on_delete=models.CASCADE, related_name='form_fields')
 
+
 class ConnectionCardPage(AbstractEmailForm):
     intro = RichTextField(blank=True)
     thank_you_text = RichTextField(blank=True)
+
+    landing_page_template = "contact/connection_card_page_landing.html"
 
     content_panels = AbstractEmailForm.content_panels + [
         FieldPanel('intro'),
@@ -26,3 +31,11 @@ class ConnectionCardPage(AbstractEmailForm):
             FieldPanel('subject'),
         ], "Email"),
     ]
+
+    search_fields = AbstractEmailForm.search_fields + [
+        index.SearchField('intro'),
+        index.SearchField('thank_you_text'),
+    ]
+
+    max_count = 1
+    parent_page_types = ['home.HomePage']

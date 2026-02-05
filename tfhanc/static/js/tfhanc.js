@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (distance < 0) {
                 countdown.innerHTML = "<h3>Service is LIVE!</h3>";
+                clearInterval(timerId);
                 return;
             }
 
@@ -24,6 +25,6 @@ document.addEventListener('DOMContentLoaded', function () {
         };
 
         updateCountdown();
-        setInterval(updateCountdown, 1000);
+        const timerId = setInterval(updateCountdown, 1000);
     }
 });

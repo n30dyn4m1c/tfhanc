@@ -1,4 +1,5 @@
 import os
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.files import File
 from django.utils import timezone
@@ -10,6 +11,7 @@ from media.models import MediaHubPage, MessagePage, Topic
 from contact.models import ConnectionCardPage, FormField
 from giving.models import GivingPage
 
+
 class Command(BaseCommand):
     help = 'Seeds the database with initial dummy content for TFHANC'
 
@@ -17,7 +19,7 @@ class Command(BaseCommand):
         self.stdout.write('Seeding data...')
 
         # 1. Setup Hero Image
-        image_path = '/home/neo/.gemini/antigravity/brain/37b701b7-273c-497e-986e-78de96eb20f9/church_hero_image_purple_1769997743802.png'
+        image_path = settings.BASE_DIR / 'fixtures' / 'hero.png'
         hero_image = Image.objects.filter(title="Church Hero Purple").first()
         if not hero_image and os.path.exists(image_path):
             with open(image_path, 'rb') as f:
@@ -26,34 +28,34 @@ class Command(BaseCommand):
                     file=File(f, name="hero.png")
                 )
         elif not hero_image:
-            self.stdout.write(self.style.WARNING(f'Hero image not found and file missing at {image_path}'))
+            self.stdout.write(self.style.WARNING(f'Hero image not found at {image_path}'))
 
-        # 2. Setup HomePage
-        try:
-            home_page = HomePage.objects.get(id=3)
-            home_page.title = "The Father's House, All Nations Church"
-            home_page.hero_title = "Executing the Mandate."
-            home_page.hero_subtitle = "Advancing the Kingdom. It is NOW!"
-            home_page.hero_cta_text = "Join Us for Service"
-            home_page.hero_image = hero_image
-            
-            now = timezone.now()
-            days_ahead = (6 - now.weekday()) % 7
-            if days_ahead == 0 and now.hour >= 9:
-                days_ahead = 7
-            next_sunday = now.replace(hour=9, minute=0, second=0, microsecond=0) + timedelta(days=days_ahead)
-            home_page.countdown_target = next_sunday
-            
-            home_page.guest_header = "Welcome to Our Family"
-            home_page.salvation_prayer_title = "The Prayer of Salvation"
-            home_page.salvation_prayer_text = "<p>Heavenly Father, I come to You in the Name of Jesus. I believe that Jesus Christ is the Son of God, and that He died for my sins and was raised from the dead for my justification. I receive Him now as my Lord and Savior. Amen.</p>"
-            home_page.connect_title = "Stay Connected"
-            home_page.connect_text = "Whether you're a first-time guest or a long-time member, we want to hear from you."
-            home_page.save_revision().publish()
-            self.stdout.write(self.style.SUCCESS('HomePage updated.'))
-        except HomePage.DoesNotExist:
-            self.stdout.write(self.style.ERROR('Default HomePage not found. Check ID.'))
+        # 2. Setup HomePage – find dynamically
+        home_page = HomePage.objects.live().first()
+        if not home_page:
+            self.stdout.write(self.style.ERROR('No published HomePage found. Create one in the admin first.'))
             return
+
+        home_page.title = "The Father's House, All Nations Church"
+        home_page.hero_title = "Executing the Mandate."
+        home_page.hero_subtitle = "Advancing the Kingdom. It is NOW!"
+        home_page.hero_cta_text = "Join Us for Service"
+        home_page.hero_image = hero_image
+
+        now = timezone.now()
+        days_ahead = (6 - now.weekday()) % 7
+        if days_ahead == 0 and now.hour >= 9:
+            days_ahead = 7
+        next_sunday = now.replace(hour=9, minute=0, second=0, microsecond=0) + timedelta(days=days_ahead)
+        home_page.countdown_target = next_sunday
+
+        home_page.guest_header = "Welcome to Our Family"
+        home_page.salvation_prayer_title = "The Prayer of Salvation"
+        home_page.salvation_prayer_text = "<p>Heavenly Father, I come to You in the Name of Jesus. I believe that Jesus Christ is the Son of God, and that He died for my sins and was raised from the dead for my justification. I receive Him now as my Lord and Savior. Amen.</p>"
+        home_page.connect_title = "Stay Connected"
+        home_page.connect_text = "Whether you're a first-time guest or a long-time member, we want to hear from you."
+        home_page.save_revision().publish()
+        self.stdout.write(self.style.SUCCESS('HomePage updated.'))
 
         # 3. Create MediaHubPage
         media_hub = MediaHubPage.objects.filter(slug='media').first()
@@ -70,7 +72,7 @@ class Command(BaseCommand):
         # Add dummy messages
         Topic.objects.get_or_create(name="Kingdom")
         Topic.objects.get_or_create(name="Prophecy")
-        
+
         msg = MessagePage.objects.filter(slug='sunday-message-jan-2026').first()
         if not msg:
             msg = MessagePage(
@@ -111,7 +113,6 @@ class Command(BaseCommand):
                 subject='New Connection Card Submission',
             )
             home_page.add_child(instance=connection)
-            # Add form fields
             FormField.objects.create(page=connection, label="Full Name", field_type='singleline', required=True)
             FormField.objects.create(page=connection, label="Email", field_type='email', required=True)
             FormField.objects.create(page=connection, label="Prayer Request", field_type='multiline', required=False)

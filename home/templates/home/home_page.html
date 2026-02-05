@@ -3,16 +3,15 @@
 
 {% block content %}
 {% if self.hero_image %}
-{% image self.hero_image fill-1920x1080 as img %}
-<section class="hero"
-    style="background: linear-gradient(rgba(120, 81, 169, 0.8), rgba(120, 81, 169, 0.6)), url('{{ img.url }}'); background-size: cover;">
-    {% else %}
+    {% image self.hero_image fill-1920x1080 as img %}
+    <section class="hero" style="background: linear-gradient(rgba(120, 81, 169, 0.8), rgba(120, 81, 169, 0.6)), url('{{ img.url }}'); background-size: cover;">
+{% else %}
     <section class="hero">
-        {% endif %}
+{% endif %}
         <div class="container">
             <h1>{{ self.hero_title|default:"TFHANC" }}</h1>
             <p>{{ self.hero_subtitle|default:"Executing the Mandate. Advancing the Kingdom. It is NOW!" }}</p>
-            <a href="/service" class="btn">{{ self.hero_cta_text }}</a>
+            <a href="{% slugurl 'connect' %}" class="btn">{{ self.hero_cta_text }}</a>
         </div>
     </section>
 
@@ -42,21 +41,21 @@
     </section>
     {% endif %}
 
-    <section class="container eagle-motif" style="padding: 100px 0;">
-        <div style="max-width: 800px; margin: 0 auto; text-align: center;">
-            <h2 style="color: var(--royal-purple); font-size: 2.5rem; margin-bottom: 2rem;">{{ self.guest_header }}</h2>
-            <div style="background: var(--mist-grey); padding: 3rem; border-radius: 30px;">
-                <h3 style="margin-bottom: 1.5rem;">{{ self.salvation_prayer_title }}</h3>
-                <div style="font-style: italic; font-size: 1.1rem;">
+    <section class="section-padded eagle-motif">
+        <div class="content-narrow text-center">
+            <h2 class="page-title">{{ self.guest_header }}</h2>
+            <div class="prayer-card">
+                <h3>{{ self.salvation_prayer_title }}</h3>
+                <div class="prayer-card__text">
                     {{ self.salvation_prayer_text|richtext }}
                 </div>
             </div>
 
-            <div style="margin-top: 4rem;">
+            <div class="connect-cta">
                 <h3>{{ self.connect_title }}</h3>
                 <p>{{ self.connect_text }}</p>
-                <a href="/connect/" class="btn" style="margin-top: 1.5rem;">Digital Connection Card</a>
+                <a href="{% slugurl 'connect' %}" class="btn">Digital Connection Card</a>
             </div>
         </div>
     </section>
-    {% endblock %}
+{% endblock %}
