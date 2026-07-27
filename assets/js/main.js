@@ -49,17 +49,18 @@
     });
   }
 
-  /* ---------- Countdown to next Sunday 9:00 AM, Port Moresby (UTC+10) ---------- */
+  /* ---------- Countdown to next All Out Prayer Night, Friday 7:00 PM, Port Moresby (UTC+10) ---------- */
   var PNG_OFFSET_MS = 10 * 60 * 60 * 1000; // PNG has no daylight saving
-  var SERVICE_HOUR = 9;
+  var PRAYER_NIGHT_DAY = 5; // 0 = Sunday, 5 = Friday
+  var PRAYER_NIGHT_HOUR = 19; // 7:00 PM
 
   function nextServiceTime() {
     // Current wall-clock time in Port Moresby, represented as a UTC-based date
     var pngNow = new Date(Date.now() + PNG_OFFSET_MS);
     var target = new Date(pngNow);
-    var daysAhead = (7 - pngNow.getUTCDay()) % 7; // 0 = Sunday
+    var daysAhead = (PRAYER_NIGHT_DAY - pngNow.getUTCDay() + 7) % 7;
     target.setUTCDate(pngNow.getUTCDate() + daysAhead);
-    target.setUTCHours(SERVICE_HOUR, 0, 0, 0);
+    target.setUTCHours(PRAYER_NIGHT_HOUR, 0, 0, 0);
     if (target <= pngNow) {
       target.setUTCDate(target.getUTCDate() + 7);
     }
