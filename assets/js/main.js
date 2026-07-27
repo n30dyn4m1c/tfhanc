@@ -49,7 +49,7 @@
     });
   }
 
-  /* ---------- Countdown to next All Out Prayer Night, Friday 7:00 PM, Port Moresby (UTC+10) ---------- */
+  /* ---------- Countdown to next Breakthrough Prayer Night, Friday 7:00 PM, Port Moresby (UTC+10) ---------- */
   var PNG_OFFSET_MS = 10 * 60 * 60 * 1000; // PNG has no daylight saving
   var PRAYER_NIGHT_DAY = 5; // 0 = Sunday, 5 = Friday
   var PRAYER_NIGHT_HOUR = 19; // 7:00 PM
