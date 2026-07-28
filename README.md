@@ -6,12 +6,12 @@ Official website for The Father's House, All Nations Church — Port Moresby, Pa
 
 ## About this site
 
-A fast, modern static website — no build step, no framework, no server required.
+A fast, modern static website — no build step, no framework, no server required. Everything lives on a single page with expandable accordion sections for leadership bios and prophecies.
 
 ```
-index.html          — the whole site (single page)
-assets/css/style.css — design system & styles
-assets/js/main.js    — countdown, nav, reveal animations, connect form
+index.html           — the whole site (single page)
+assets/css/style.css — design system, styles & accordion
+assets/js/main.js    — countdown, nav, reveal, accordion, connect form
 assets/img/          — logo & photography
 ```
 
@@ -33,6 +33,7 @@ the footer, and as the favicon.
 
 ## Updating content
 
-All text lives directly in `index.html` — service times, location, messages, and
-contact details can be edited there. Colors and fonts are defined as CSS variables
-at the top of `assets/css/style.css`.
+All text lives directly in `index.html` — service times, location, messages, leadership
+bios, prophecies, and contact details can be edited there. Expandable sections use the
+`.accordion` markup pattern. Colors and fonts are defined as CSS variables at the top of
+`assets/css/style.css`.
