@@ -40,7 +40,7 @@
       { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
     );
     revealEls.forEach(function (el, i) {
-      el.style.transitionDelay = (i % 4) * 90 + "ms";
+      el.style.transitionDelay = (i % 4) * 80 + "ms";
       io.observe(el);
     });
   } else {
@@ -123,13 +123,13 @@
     setInterval(tick, 1000);
   }
 
-  /* ---------- Connection card form (mailto handoff) ---------- */
+  /* ---------- Prayer request form (mailto handoff) ---------- */
   var form = document.getElementById("connectForm");
   if (form) {
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var data = new FormData(form);
-      var subject = "Connection Card — " + (data.get("name") || "Website Visitor");
+      var subject = "Prayer Request — " + (data.get("name") || "Website Visitor");
       var body =
         "Name: " + (data.get("name") || "") + "\n" +
         "Email: " + (data.get("email") || "") + "\n\n" +

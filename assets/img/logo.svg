@@ -1,30 +1,33 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-label="The Father's House All Nations Church eagle emblem">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="The Father's House All Nations Church emblem — an eagle rising through the door of the house">
   <defs>
-    <linearGradient id="tfh-g" x1="0" y1="1" x2="1" y2="0">
-      <stop offset="0" stop-color="#7c3aed"/>
-      <stop offset=".55" stop-color="#a855f7"/>
-      <stop offset="1" stop-color="#d8b4fe"/>
+    <linearGradient id="tfh-wing" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#5b21b6"/>
+      <stop offset=".6" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="tfh-wing-l" x1="1" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#5b21b6"/>
+      <stop offset=".6" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#a78bfa"/>
     </linearGradient>
   </defs>
-  <g fill="url(#tfh-g)">
-    <!-- left wing -->
-    <path d="M120 108 C 72 104 36 86 6 46 C 26 94 70 116 120 120 Z"/>
-    <path d="M120 98 C 82 86 54 60 34 16 C 42 70 76 96 120 110 Z"/>
-    <path d="M120 90 C 102 72 92 44 90 4 C 84 54 98 80 122 98 Z"/>
-    <!-- right wing -->
-    <g transform="matrix(-1 0 0 1 240 0)">
-      <path d="M120 108 C 72 104 36 86 6 46 C 26 94 70 116 120 120 Z"/>
-      <path d="M120 98 C 82 86 54 60 34 16 C 42 70 76 96 120 110 Z"/>
-      <path d="M120 90 C 102 72 92 44 90 4 C 84 54 98 80 122 98 Z"/>
-    </g>
+  <!-- the door of the house -->
+  <path d="M36 112 V62 A24 24 0 0 1 84 62 V112" fill="none" stroke="#c9a24b" stroke-width="3" stroke-linecap="round"/>
+  <!-- right wing: outer crescent + inner light crescent -->
+  <path d="M60 66 C 84 64 104 50 116 28 C 114 60 90 76 60 76 Z" fill="url(#tfh-wing)"/>
+  <path d="M64 55 C 80 51 92 41 100 25 C 100 47 85 59 64 63 Z" fill="#c4b5fd"/>
+  <!-- left wing -->
+  <g transform="matrix(-1 0 0 1 120 0)">
+    <path d="M60 66 C 84 64 104 50 116 28 C 114 60 90 76 60 76 Z" fill="url(#tfh-wing-l)"/>
+    <path d="M64 55 C 80 51 92 41 100 25 C 100 47 85 59 64 63 Z" fill="#c4b5fd"/>
+  </g>
+  <g fill="url(#tfh-wing)">
     <!-- head and beak -->
-    <circle cx="120" cy="78" r="10"/>
-    <path d="M128 72 L143 78 L128 84 Z"/>
-    <!-- body and tail -->
-    <path d="M112 88 C 108 118 111 144 120 166 C 129 144 132 118 128 88 C 125 94 115 94 112 88 Z"/>
-    <path d="M106 106 C 98 126 94 140 84 154 C 99 146 109 128 114 112 Z"/>
-    <g transform="matrix(-1 0 0 1 240 0)">
-      <path d="M106 106 C 98 126 94 140 84 154 C 99 146 109 128 114 112 Z"/>
-    </g>
+    <circle cx="60" cy="40" r="7"/>
+    <path d="M66 36.5 L76 40.5 L66 44.5 Z"/>
+    <!-- body -->
+    <path d="M54.5 52 C 52.5 70 55 84 60 94 C 65 84 67.5 70 65.5 52 C 63.5 55.5 56.5 55.5 54.5 52 Z"/>
+    <!-- tail fan -->
+    <path d="M56 80 L50 98 L60 90 L70 98 L64 80 Z"/>
   </g>
 </svg>
