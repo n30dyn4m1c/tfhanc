@@ -449,6 +449,201 @@ h3 { font-size: 1.35rem; margin-bottom: 0.6rem; }
   border-color: rgba(231, 199, 120, 0.3);
 }
 
+/* ---------- Accordion ---------- */
+
+.accordion {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+.accordion__item {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(160deg, rgba(196, 181, 253, 0.05), rgba(20, 13, 33, 0.6));
+  overflow: hidden;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.accordion__item.is-open {
+  border-color: rgba(168, 85, 247, 0.45);
+  box-shadow: 0 16px 48px rgba(124, 58, 237, 0.14);
+}
+
+.accordion__trigger {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1.1rem;
+  align-items: center;
+  width: 100%;
+  padding: 1.5rem 1.6rem;
+  background: none;
+  border: none;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.accordion__trigger:hover {
+  background: rgba(196, 181, 253, 0.04);
+}
+
+.accordion__trigger:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: -2px;
+}
+
+.accordion__icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  color: var(--violet-soft);
+  background: rgba(124, 58, 237, 0.16);
+  flex-shrink: 0;
+}
+
+.accordion__icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.accordion__tag {
+  grid-column: 1;
+  align-self: start;
+  margin-top: 0.2rem;
+}
+
+.accordion__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.accordion__heading strong {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.25rem;
+  color: var(--ink);
+  line-height: 1.25;
+}
+
+.accordion__summary {
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.accordion__chevron {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  position: relative;
+  flex-shrink: 0;
+  transition: border-color 0.25s ease, background 0.25s ease, transform 0.3s ease;
+}
+
+.accordion__chevron::before,
+.accordion__chevron::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: var(--violet-soft);
+  transition: transform 0.3s ease;
+}
+
+.accordion__chevron::before {
+  width: 10px;
+  height: 1.5px;
+  transform: translate(-50%, -50%);
+}
+
+.accordion__chevron::after {
+  width: 1.5px;
+  height: 10px;
+  transform: translate(-50%, -50%);
+}
+
+.accordion__item.is-open .accordion__chevron {
+  border-color: var(--violet);
+  background: rgba(124, 58, 237, 0.16);
+}
+
+.accordion__item.is-open .accordion__chevron::after {
+  transform: translate(-50%, -50%) scaleY(0);
+}
+
+.accordion__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.accordion__item.is-open .accordion__panel {
+  grid-template-rows: 1fr;
+}
+
+.accordion__panel[hidden] {
+  display: grid;
+}
+
+.accordion__body {
+  overflow: hidden;
+  padding: 0 1.6rem;
+  min-height: 0;
+}
+
+.accordion__item.is-open .accordion__body {
+  padding-bottom: 1.6rem;
+}
+
+.accordion__body p {
+  color: var(--ink-soft);
+  font-size: 1.02rem;
+  max-width: 68ch;
+  margin-bottom: 1rem;
+}
+
+.accordion__body p:last-child {
+  margin-bottom: 0;
+}
+
+.accordion__body p strong {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.accordion__source {
+  font-size: 0.85rem !important;
+  color: var(--ink-faint) !important;
+}
+
+.accordion__source a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.accordion__source a:hover {
+  color: var(--violet-soft);
+}
+
+.accordion__cta {
+  margin-top: 1.2rem !important;
+  margin-bottom: 0 !important;
+}
+
+/* Prophecy accordion: tag sits in first column */
+.accordion__trigger:has(.accordion__tag) {
+  grid-template-columns: auto 1fr auto;
+}
+
 /* ---------- Verse / Prayer ---------- */
 
 .verse {
@@ -616,6 +811,7 @@ h3 { font-size: 1.35rem; margin-bottom: 0.6rem; }
   .reveal { opacity: 1; transform: none; transition: none; }
   .hero__bg { animation: none; }
   .hero__scroll span { animation: none; }
+  .accordion__panel { transition: none; }
 }
 
 /* ---------- Responsive ---------- */
@@ -660,4 +856,26 @@ h3 { font-size: 1.35rem; margin-bottom: 0.6rem; }
   .cards { grid-template-columns: 1fr; }
   .split__media { order: -1; }
   .split__media img { aspect-ratio: 16 / 10; }
+}
+
+@media (max-width: 600px) {
+  .accordion__trigger {
+    grid-template-columns: 1fr auto;
+    gap: 0.8rem;
+    padding: 1.25rem 1.2rem;
+  }
+  .accordion__icon {
+    display: none;
+  }
+  .accordion__tag {
+    grid-column: 1 / -1;
+    margin-bottom: 0.2rem;
+  }
+  .accordion__body {
+    padding-left: 1.2rem;
+    padding-right: 1.2rem;
+  }
+  .accordion__heading strong {
+    font-size: 1.1rem;
+  }
 }

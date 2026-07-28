@@ -49,13 +49,43 @@
     });
   }
 
+  /* ---------- Accordion (expandable panels) ---------- */
+  document.querySelectorAll("[data-accordion]").forEach(function (group) {
+    group.querySelectorAll(".accordion__trigger").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var item = btn.closest(".accordion__item");
+        var panel = document.getElementById(btn.getAttribute("aria-controls"));
+        var isOpen = item.classList.contains("is-open");
+
+        /* Close siblings in the same group */
+        group.querySelectorAll(".accordion__item.is-open").forEach(function (openItem) {
+          if (openItem === item) return;
+          openItem.classList.remove("is-open");
+          var openBtn = openItem.querySelector(".accordion__trigger");
+          var openPanel = document.getElementById(openBtn.getAttribute("aria-controls"));
+          openBtn.setAttribute("aria-expanded", "false");
+          if (openPanel) openPanel.hidden = true;
+        });
+
+        if (isOpen) {
+          item.classList.remove("is-open");
+          btn.setAttribute("aria-expanded", "false");
+          if (panel) panel.hidden = true;
+        } else {
+          item.classList.add("is-open");
+          btn.setAttribute("aria-expanded", "true");
+          if (panel) panel.hidden = false;
+        }
+      });
+    });
+  });
+
   /* ---------- Countdown to next Breakthrough Prayer Night, Friday 7:00 PM, Port Moresby (UTC+10) ---------- */
   var PNG_OFFSET_MS = 10 * 60 * 60 * 1000; // PNG has no daylight saving
   var PRAYER_NIGHT_DAY = 5; // 0 = Sunday, 5 = Friday
   var PRAYER_NIGHT_HOUR = 19; // 7:00 PM
 
   function nextServiceTime() {
-    // Current wall-clock time in Port Moresby, represented as a UTC-based date
     var pngNow = new Date(Date.now() + PNG_OFFSET_MS);
     var target = new Date(pngNow);
     var daysAhead = (PRAYER_NIGHT_DAY - pngNow.getUTCDay() + 7) % 7;
@@ -64,7 +94,6 @@
     if (target <= pngNow) {
       target.setUTCDate(target.getUTCDate() + 7);
     }
-    // Convert PNG wall-clock target back to a real timestamp
     return target.getTime() - PNG_OFFSET_MS;
   }
 
