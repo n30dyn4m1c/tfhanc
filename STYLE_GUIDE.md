@@ -151,7 +151,7 @@ exactly; never abbreviate or approximate them in published copy.
   then "the ISAAC Network."
 - **Dates** — day month year, in full: *9 April 2021*, *20 April 2021*. Do not
   use numeric-only dates.
-- **Places** — *Gordon International School Hall, Port Moresby, Papua New Guinea.*
+- **Places** — *Taurama Aquatic Centre Lounge, Port Moresby, Papua New Guinea.*
   Spell "Papua New Guinea" in full at least once per page before using "PNG."
 
 ---
