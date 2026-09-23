@@ -5,5 +5,5 @@
 </defs>
 <rect width="1200" height="900" fill="url(#g)"/><rect width="1200" height="900" fill="url(#l)"/>
 <g stroke="#f4ece2" stroke-opacity=".22" stroke-width="2" fill="none"><path d="M0 560 Q300 540 600 560 T1200 560"/><path d="M0 598 Q300 578 600 598 T1200 598"/><path d="M0 636 Q300 616 600 636 T1200 636"/><path d="M0 674 Q300 654 600 674 T1200 674"/><path d="M0 712 Q300 692 600 712 T1200 712"/><path d="M0 750 Q300 730 600 750 T1200 750"/><path d="M0 788 Q300 768 600 788 T1200 788"/><path d="M0 826 Q300 806 600 826 T1200 826"/></g><path d="M450.0 560 V300.0 A150.0 150.0 0 0 1 750.0 300.0 V560" fill="none" stroke="#e2b866" stroke-width="3" stroke-opacity="0.6"/>
-<text x="60" y="855" font-family="system-ui, sans-serif" font-size="29" fill="#f4ece2" fill-opacity=".82">Photograph to come · Taurama Aquatic Centre Lounge</text>
+<text x="60" y="74" font-family="system-ui, sans-serif" font-size="29" fill="#f4ece2" fill-opacity=".82">Photograph to come · Taurama Aquatic Centre Lounge</text>
 </svg>
