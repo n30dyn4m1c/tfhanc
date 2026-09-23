@@ -37,7 +37,18 @@ A fast static site with no build step, no framework and no server. The design, "
 - Generated `.ics` calendar files for Sunday Celebration and Breakthrough Prayer Night
 - A contact form with inline validation, a copy-address button, and a `mailto:` fallback. It can post to a form service instead (see below).
 - Swipeable card rails on phones to keep the page short; everything stacks or sits in grids on wider screens
-- Honours `prefers-reduced-motion`. The site has no looping animation.
+- Motion design, all of it optional enhancement:
+  - **Hero:** a dusk glow with rising lights ("prayers going up") drawn on a canvas. The lights lean toward the pointer, and a click or tap sends up a burst. The canvas runs only while the hero is on screen.
+  - **Entrance:** the hero photograph opens through the door-arch from the mark, and the headline rises word by word.
+  - **Live clock:** the next gathering counts down in days, hours, minutes and seconds.
+  - **Scroll:** headings rise as they arrive, cards reveal in a stagger, photographs drift with a gentle parallax (CSS scroll timelines), and a reading-progress line runs under the header.
+  - **Scripture:** James 5:16 lights up word by word as it is read.
+  - **Pointer:** cards catch the light under the pointer, and the hero buttons lean toward it.
+  - **Motto:** a ribbon carries the motto across the page.
+  - **Begin here:** a flame flickers, and a warm light follows the pointer.
+  - **Footer:** the seal's ring turns as the page is read.
+  - **Theme toggle:** the new theme spreads out in a circle from the toggle (View Transitions).
+- Honours `prefers-reduced-motion`: nothing moves, nothing is hidden, and the canvas is not drawn. Split headings keep their whole text for screen readers.
 - Self-hosted fonts (Fraunces and Figtree, `woff2`, `font-display: swap`); deferred JS; one CSS file under 40 KB
 - Open Graph and Twitter cards, a canonical link, and `Church` JSON-LD with both weekly gatherings
 

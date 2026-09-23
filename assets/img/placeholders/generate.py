@@ -15,7 +15,7 @@ def figure(cx, base, s, op):
             f'<path d="M{cx-1.05*s} {base} C{cx-1.05*s} {base-1.25*s} {cx-0.6*s} {base-1.75*s} {cx} {base-1.75*s} '
             f'C{cx+0.6*s} {base-1.75*s} {cx+1.05*s} {base-1.25*s} {cx+1.05*s} {base} Z"/></g>')
 
-def svg(name, w, h, label, body, glow=(0.72, 0.9)):
+def svg(name, w, h, label, body, glow=(0.72, 0.9), label_y=0.05):
     gx, gy = glow
     s = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}">
 <defs>
@@ -24,7 +24,7 @@ def svg(name, w, h, label, body, glow=(0.72, 0.9)):
 </defs>
 <rect width="{w}" height="{h}" fill="url(#g)"/><rect width="{w}" height="{h}" fill="url(#l)"/>
 {body}
-<text x="{w/2:.0f}" text-anchor="middle" y="{0.05*h + min(w,h)*0.032:.0f}" font-family="system-ui, sans-serif" font-size="{max(14, round(min(w,h)*0.032))}" fill="{SAND}" fill-opacity=".82">Photograph to come · {label}</text>
+<text x="{w/2:.0f}" text-anchor="middle" y="{label_y*h + min(w,h)*0.032:.0f}" font-family="system-ui, sans-serif" font-size="{max(14, round(min(w,h)*0.032))}" fill="{SAND}" fill-opacity=".82">Photograph to come · {label}</text>
 </svg>
 '''
     with open(os.path.join(OUT, name), "w") as f:
@@ -35,7 +35,8 @@ def crowd(w, h, n, base, s, op):
 
 svg("hero.svg", 1200, 1400, "Sunday Celebration",
     arch(600, 1400, 760, 170, 3, .55) + arch(600, 1400, 620, 290, 1.5, .35)
-    + crowd(1200, 1400, 7, 1400, 120, .16) + crowd(1200, 1400, 6, 1330, 90, .10), (0.5, 0.35))
+    + crowd(1200, 1400, 7, 1400, 120, .16) + crowd(1200, 1400, 6, 1330, 90, .10), (0.5, 0.35),
+    label_y=0.3)  # below the door-arch crop of the hero frame
 svg("prayer-night.svg", 1600, 720, "Breakthrough Prayer Night",
     arch(800, 720, 520, 60, 2.5, .5) + crowd(1600, 720, 11, 720, 95, .14), (0.5, 0.2))
 svg("venue.svg", 1200, 900, "Taurama Aquatic Centre Lounge",
