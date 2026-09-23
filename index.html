@@ -152,6 +152,7 @@
         </button>
       </div>
     </div>
+    <span class="header__progress" aria-hidden="true"></span>
   </header>
 
   <!-- Mobile menu: a modal panel. Focus is trapped inside while open,
@@ -187,6 +188,11 @@
 
     <!-- ======================= Hero ======================= -->
     <section class="hero" id="top" aria-labelledby="hero-title">
+      <!-- Motion layer: a dusk glow and rising lights (prayers going up).
+           Drawn by main.js; responds to the pointer; a click or tap sends up
+           a burst of light. Not drawn under reduced motion. -->
+      <div class="hero__aura" aria-hidden="true"></div>
+      <canvas class="hero__sky" aria-hidden="true"></canvas>
       <div class="hero__grid container">
         <div class="hero__head">
           <p class="hero__place">Port Moresby, Papua New Guinea</p>
@@ -223,16 +229,23 @@
             <span class="countdown__next">Next: <span data-countdown-name>Sunday Celebration</span></span>
             <span class="countdown__time" data-countdown-time></span>
           </p>
+          <div class="clock" data-clock aria-hidden="true" hidden>
+            <span class="clock__cell"><b data-clock-d>0</b><small>days</small></span>
+            <span class="clock__cell"><b data-clock-h>00</b><small>hrs</small></span>
+            <span class="clock__cell"><b data-clock-m>00</b><small>min</small></span>
+            <span class="clock__cell"><b data-clock-s>00</b><small>sec</small></span>
+          </div>
         </div>
 
         <div class="hero__actions">
-          <a class="btn btn--primary" href="#visit">Plan your visit</a>
-          <a class="btn btn--secondary" href="#connect" data-topic="Prayer request">Send a prayer request</a>
+          <a class="btn btn--primary" href="#visit" data-magnetic>Plan your visit</a>
+          <a class="btn btn--secondary" href="#connect" data-topic="Prayer request" data-magnetic>Send a prayer request</a>
         </div>
 
         <figure class="hero__photo photo">
           <!-- CONTENT NEEDED: hero photograph (the congregation at Sunday Celebration or in prayer). About 1200 × 1400 px, portrait. Replace src and update alt. -->
           <img src="assets/img/placeholders/hero.svg" width="1200" height="1400" alt="Placeholder for a photograph of the congregation at Sunday Celebration" fetchpriority="high">
+          <span class="hero__arch" aria-hidden="true"></span>
         </figure>
       </div>
     </section>
@@ -246,7 +259,7 @@
         </header>
 
         <div class="visit__grid rail" role="group" aria-label="Gatherings and venue">
-          <article class="gathering reveal">
+          <article data-spot class="gathering reveal">
             <p class="gathering__when">Sunday · 9:00 AM – 1:30 PM</p>
             <h3>Sunday Celebration</h3>
             <p>Come as you are. Arrive a few minutes early and our team will welcome you.</p>
@@ -255,7 +268,7 @@
             </a>
           </article>
 
-          <article class="gathering night reveal" id="prayer-night">
+          <article data-spot class="gathering night reveal" id="prayer-night">
             <p class="gathering__when">Friday · 7:00 PM</p>
             <h3>Breakthrough Prayer Night</h3>
             <p>The front door of this house. Come and contend with us in prayer for this house, this city, and the nations, and watch what God does.</p>
@@ -264,8 +277,8 @@
             </a>
           </article>
 
-          <article class="venue reveal">
-            <figure class="venue__photo photo">
+          <article data-spot class="venue reveal">
+            <figure class="venue__photo photo" data-parallax>
               <!-- CONTENT NEEDED: photograph of the Taurama Aquatic Centre Lounge (entrance or room set for worship). About 1200 × 900 px. -->
               <img src="assets/img/placeholders/venue.svg" width="1200" height="900" loading="lazy" alt="Placeholder for a photograph of the Taurama Aquatic Centre Lounge">
             </figure>
@@ -369,7 +382,7 @@
 
     <!-- ======================= Why we pray (night) ======================= -->
     <section class="section night why" id="why-we-pray" aria-labelledby="why-title">
-      <figure class="why__band photo">
+      <figure class="why__band photo" data-parallax>
         <!-- CONTENT NEEDED: wide photograph of Breakthrough Prayer Night (people at prayer, low light). About 1600 × 720 px. -->
         <img src="assets/img/placeholders/prayer-night.svg" width="1600" height="720" loading="lazy" alt="Placeholder for a photograph of the house at Breakthrough Prayer Night">
       </figure>
@@ -380,7 +393,7 @@
           <p class="lead">Not a warm-up. Not a last resort. The first work of the Church, and the reason breakthrough comes.</p>
         </header>
 
-        <figure class="scripture scripture--spread reveal">
+        <figure class="scripture scripture--spread" data-illuminate>
           <blockquote>
             <p>“The effectual fervent prayer of a righteous man availeth much.”</p>
           </blockquote>
@@ -412,6 +425,14 @@
       </div>
     </section>
 
+    <!-- Motto ribbon: decorative (the motto is read in the footer). -->
+    <div class="ribbon" aria-hidden="true">
+      <div class="ribbon__track">
+        <span>Executing the Mandate</span><i></i><span>Advancing the Kingdom</span><i></i><span>It is now</span><i></i>
+        <span>Executing the Mandate</span><i></i><span>Advancing the Kingdom</span><i></i><span>It is now</span><i></i>
+      </div>
+    </div>
+
     <!-- ======================= Leadership ======================= -->
     <section class="section leadership" id="leadership" aria-labelledby="leadership-title">
       <div class="container">
@@ -424,8 +445,8 @@
         </header>
 
         <div class="leaders rail" role="group" aria-label="Leaders of the house">
-          <article class="leader reveal">
-            <figure class="leader__photo photo">
+          <article data-spot class="leader reveal">
+            <figure class="leader__photo photo" data-parallax>
               <!-- CONTENT NEEDED: portrait of Pastor Ben Minok. About 800 × 1000 px, 4:5. -->
               <img src="assets/img/placeholders/portrait-ben.svg" width="800" height="1000" loading="lazy" alt="Placeholder for a portrait of Pastor Ben Minok">
             </figure>
@@ -439,8 +460,8 @@
             </div>
           </article>
 
-          <article class="leader reveal">
-            <figure class="leader__photo photo">
+          <article data-spot class="leader reveal">
+            <figure class="leader__photo photo" data-parallax>
               <!-- CONTENT NEEDED: portrait of Dr Jonathan David (with permission). About 800 × 1000 px, 4:5. -->
               <img src="assets/img/placeholders/portrait-jonathan.svg" width="800" height="1000" loading="lazy" alt="Placeholder for a portrait of Dr Jonathan David">
             </figure>
@@ -454,7 +475,7 @@
             </div>
           </article>
 
-          <article class="serve reveal">
+          <article data-spot class="serve reveal">
             <h3>Those who serve</h3>
             <p>The Father’s House and ISAAC Network bring together the volunteers and department heads who serve this house, from worship to welcome, hospitality to logistics. Their faithful service behind the scenes makes every gathering possible.</p>
             <a class="link" href="#connect" data-topic="Serving in the house">Get involved<svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
@@ -559,7 +580,15 @@
 
     <!-- ======================= Begin here (night) ======================= -->
     <section class="section night begin" id="begin" aria-labelledby="begin-title">
+      <div class="begin__light" aria-hidden="true"></div>
       <div class="container begin__inner">
+        <svg class="flame" viewBox="0 0 40 64" aria-hidden="true" focusable="false">
+          <defs>
+            <radialGradient id="flame-g" cx="50%" cy="72%" r="60%"><stop offset="0" stop-color="#fff4d6"/><stop offset=".45" stop-color="#e2b866"/><stop offset="1" stop-color="#b0441c" stop-opacity="0"/></radialGradient>
+          </defs>
+          <path class="flame__outer" d="M20 2C24 14 36 24 36 40a16 16 0 0 1-32 0C4 28 14 22 20 2z" fill="url(#flame-g)"/>
+          <path class="flame__inner" d="M20 26c2 6 7 9 7 16a7 7 0 0 1-14 0c0-6 5-9 7-16z" fill="#fff4d6"/>
+        </svg>
         <p class="label">Begin here</p>
         <h2 id="begin-title">The most important prayer anyone can pray.</h2>
         <p class="begin__prayer reveal">“Heavenly Father, I come to You in the Name of Jesus. I believe that Jesus Christ is the Son of God, and that He died for my sins and was raised from the dead for my justification. I receive Him now as my Lord and Saviour. Amen.”</p>
@@ -633,17 +662,17 @@
         <!-- CONTENT NEEDED: dates and places for each conference. Replace
              "Dates to be announced" with a <time datetime="YYYY-MM-DD"> element. -->
         <ol class="events rail">
-          <li class="event reveal">
+          <li data-spot class="event reveal">
             <p class="event__date"><span class="tbc">Dates to be announced</span></p>
             <h3>Annual Conference</h3>
             <p>Our flagship gathering: days of worship, intercession, impartation, and prophetic ministry for the whole house.</p>
           </li>
-          <li class="event reveal">
+          <li data-spot class="event reveal">
             <p class="event__date"><span class="tbc">Dates to be announced</span></p>
             <h3>Leadership Summit</h3>
             <p>Equipping pastors, elders, and ministry leaders to carry the mandate with excellence in prayer and the Word.</p>
           </li>
-          <li class="event reveal">
+          <li data-spot class="event reveal">
             <p class="event__date"><span class="tbc">Dates to be announced</span></p>
             <h3>Youth and Young Adults Encounter</h3>
             <p>Raising up the next generation of Kingdom carriers who cultivate the secret place of prayer.</p>
@@ -765,7 +794,7 @@
           <defs><path id="seal-arc" d="M80 12 a68 68 0 1 1 -0.01 0"/></defs>
           <circle cx="80" cy="80" r="79" fill="none" stroke="currentColor" stroke-width="1"/>
           <circle cx="80" cy="80" r="56" fill="none" stroke="currentColor" stroke-width="0.6"/>
-          <text class="seal__text"><textPath href="#seal-arc" textLength="426" lengthAdjust="spacingAndGlyphs">The Father’s House · All Nations Church · Port Moresby · Papua New Guinea ·</textPath></text>
+          <g class="seal__ring"><text class="seal__text"><textPath href="#seal-arc" textLength="426" lengthAdjust="spacingAndGlyphs">The Father’s House · All Nations Church · Port Moresby · Papua New Guinea ·</textPath></text></g>
           <g transform="translate(44 46) scale(0.6)">
             <path d="M36 112 V62 A24 24 0 0 1 84 62 V112" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
             <path d="M60 66 C 84 64 104 50 116 28 C 114 60 90 76 60 76 Z" fill="currentColor"/>

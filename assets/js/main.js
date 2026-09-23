@@ -11,6 +11,10 @@
   var $$ = function (sel, ctx) { return Array.prototype.slice.call((ctx || doc).querySelectorAll(sel)); };
   var hasIO = "IntersectionObserver" in window;
   var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  var motionOK = !reducedMotion;
+  if (finePointer) root.classList.add("has-hover");
+  var onThemeChange = []; // redraw hooks (the hero sky reads theme colours)
   var announcer = $("#announcer");
 
   function announce(msg) {
@@ -35,22 +39,62 @@
       meta.forEach(function (m) { m.setAttribute("content", dark ? "#1a1120" : "#f5ede1"); });
     }
   }
+  function themeChanged() {
+    syncThemeToggles();
+    onThemeChange.forEach(function (fn) { fn(); });
+  }
   $$("[data-theme-toggle]").forEach(function (btn) {
     btn.addEventListener("click", function () {
       var next = activeTheme() === "dark" ? "light" : "dark";
-      root.setAttribute("data-theme", next);
-      try { localStorage.setItem("tfh-theme", next); } catch (e) { /* storage unavailable */ }
-      syncThemeToggles();
+      var apply = function () {
+        root.setAttribute("data-theme", next);
+        try { localStorage.setItem("tfh-theme", next); } catch (e) { /* storage unavailable */ }
+        themeChanged();
+      };
+      // The new theme spreads out in a circle from the toggle.
+      if (!doc.startViewTransition || !motionOK) { apply(); return; }
+      var r = btn.getBoundingClientRect();
+      var x = r.left + r.width / 2, y = r.top + r.height / 2;
+      var end = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+      doc.startViewTransition(apply).ready.then(function () {
+        root.animate(
+          { clipPath: ["circle(0px at " + x + "px " + y + "px)", "circle(" + end + "px at " + x + "px " + y + "px)"] },
+          { duration: 700, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)", pseudoElement: "::view-transition-new(root)" }
+        );
+      }, function () { /* transition skipped; the theme is already applied */ });
     });
   });
-  if (darkQuery.addEventListener) darkQuery.addEventListener("change", syncThemeToggles);
+  if (darkQuery.addEventListener) darkQuery.addEventListener("change", themeChanged);
   syncThemeToggles();
 
-  /* ---------- Header state ---------- */
+  /* ---------- Scroll-linked state (one rAF per frame at most) ----------
+     Header border, the reading-progress line, the footer seal's turn, and
+     James 5:16 lighting up word by word. */
   var header = $("#header");
-  function onScroll() { header.classList.toggle("is-scrolled", window.scrollY > 8); }
+  var footer = $(".footer");
+  var scrollHooks = [];
+  var lastProgress = -1;
+  scrollHooks.push(function () {
+    var max = doc.documentElement.scrollHeight - window.innerHeight;
+    var p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+    header.classList.toggle("is-scrolled", window.scrollY > 8);
+    if (Math.abs(p - lastProgress) < 0.0005) return;
+    lastProgress = p;
+    header.style.setProperty("--progress", p.toFixed(4));
+    if (footer && motionOK) footer.style.setProperty("--progress", p.toFixed(4));
+  });
+  var scrollQueued = false;
+  function runScrollHooks() {
+    scrollQueued = false;
+    scrollHooks.forEach(function (fn) { fn(); });
+  }
+  function onScroll() {
+    if (scrollQueued) return;
+    scrollQueued = true;
+    requestAnimationFrame(runScrollHooks);
+  }
   window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
+  window.addEventListener("resize", onScroll, { passive: true });
 
   /* ---------- Modal dialogs: menu and biographies ----------
      Native <dialog> with showModal() makes the page behind inert. We add a
@@ -92,6 +136,7 @@
   // Menu
   var menu = $("#menu");
   var menuToggle = $(".menu-toggle");
+  if (menu) $$(".menu__list li", menu).forEach(function (li, i) { li.style.setProperty("--i", i); });
   if (menu && menuToggle) {
     menuToggle.addEventListener("click", function () {
       if (openDialog(menu, menuToggle)) {
@@ -139,11 +184,15 @@
     $$("main > section[id]").forEach(function (s) { spy.observe(s); });
   }
 
-  /* ---------- Reveal on scroll ---------- */
+  /* ---------- Reveal on scroll, staggered among siblings ---------- */
   var reveals = $$(".reveal");
   if (!hasIO || reducedMotion) {
     reveals.forEach(function (el) { el.classList.add("is-visible"); });
   } else {
+    reveals.forEach(function (el) {
+      var sibs = $$(":scope > .reveal", el.parentNode);
+      el.style.setProperty("--d", Math.min(sibs.indexOf(el), 4) * 110 + "ms");
+    });
     var revealer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (entry.isIntersecting) {
@@ -153,6 +202,240 @@
       });
     }, { rootMargin: "0px 0px -8% 0px" });
     reveals.forEach(function (el) { revealer.observe(el); });
+  }
+
+  /* ---------- Headings rise word by word ----------
+     The words are drawn in an aria-hidden copy; the heading keeps its whole
+     text in a visually hidden span, so it is still read (and named) as one. */
+  function splitWords(el, withHiddenCopy) {
+    var text = el.textContent.replace(/\s+/g, " ").trim();
+    var words = text.split(" ");
+    el.textContent = "";
+    if (withHiddenCopy) {
+      var copy = doc.createElement("span");
+      copy.className = "visually-hidden";
+      copy.textContent = text;
+      el.appendChild(copy);
+    }
+    var wrap = doc.createElement("span");
+    wrap.className = "split__words";
+    if (withHiddenCopy) wrap.setAttribute("aria-hidden", "true");
+    words.forEach(function (word, i) {
+      var w = doc.createElement("span");
+      w.className = "w";
+      var inner = doc.createElement("span");
+      inner.textContent = word;
+      w.style.setProperty("--i", i);
+      w.appendChild(inner);
+      wrap.appendChild(w);
+      if (i < words.length - 1) wrap.appendChild(doc.createTextNode(" "));
+    });
+    el.appendChild(wrap);
+    el.classList.add("is-split");
+    return $$(".w", wrap);
+  }
+  if (motionOK && hasIO) {
+    var heroTitle = $(".hero__title");
+    if (heroTitle) {
+      splitWords(heroTitle, true);
+      requestAnimationFrame(function () { requestAnimationFrame(function () { heroTitle.classList.add("is-in"); }); });
+    }
+    var headings = $$("main h2").filter(function (h) { return !h.closest("dialog") && !h.children.length; });
+    var headWatch = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-in");
+        headWatch.unobserve(entry.target);
+      });
+    }, { rootMargin: "0px 0px -10% 0px" });
+    headings.forEach(function (h) { splitWords(h, true); headWatch.observe(h); });
+  }
+
+  /* ---------- James 5:16 lights up as it is read ---------- */
+  $$("[data-illuminate]").forEach(function (fig) {
+    if (!motionOK) return;
+    var p = $("blockquote p", fig);
+    if (!p) return;
+    var words = splitWords(p, false);
+    fig.classList.add("is-ready", "is-in"); // words are lit, not raised
+
+    var lit = -1;
+    scrollHooks.push(function () {
+      var r = fig.getBoundingClientRect();
+      var vh = window.innerHeight;
+      if (r.bottom < -vh || r.top > vh * 2) return;
+      var progress = (vh * 0.9 - r.top) / (vh * 0.55);
+      var n = Math.max(0, Math.min(words.length, Math.round(progress * words.length)));
+      if (n === lit) return;
+      lit = n;
+      words.forEach(function (w, i) { w.classList.toggle("is-lit", i < n); });
+    });
+  });
+
+  /* ---------- Cards catch the light; main buttons lean toward the pointer ---------- */
+  if (finePointer) {
+    $$("[data-spot]").forEach(function (card) {
+      card.addEventListener("pointermove", function (e) {
+        var r = card.getBoundingClientRect();
+        card.style.setProperty("--mx", (e.clientX - r.left) + "px");
+        card.style.setProperty("--my", (e.clientY - r.top) + "px");
+      });
+    });
+  }
+  if (finePointer && motionOK) {
+    $$("[data-magnetic]").forEach(function (btn) {
+      btn.addEventListener("pointermove", function (e) {
+        var r = btn.getBoundingClientRect();
+        var dx = (e.clientX - (r.left + r.width / 2)) / r.width;
+        var dy = (e.clientY - (r.top + r.height / 2)) / r.height;
+        btn.style.translate = (dx * 10).toFixed(1) + "px " + (dy * 8).toFixed(1) + "px";
+      });
+      btn.addEventListener("pointerleave", function () { btn.style.translate = ""; });
+    });
+  }
+
+  /* ---------- Begin here: the light follows the pointer ---------- */
+  var begin = $(".begin");
+  var beginLight = $(".begin__light");
+  if (begin && beginLight && motionOK) {
+    begin.addEventListener("pointermove", function (e) {
+      var r = begin.getBoundingClientRect();
+      beginLight.style.setProperty("--lx", (e.clientX - r.left) + "px");
+      beginLight.style.setProperty("--ly", (e.clientY - r.top) + "px");
+    });
+    begin.addEventListener("pointerleave", function () {
+      beginLight.style.removeProperty("--lx");
+      beginLight.style.removeProperty("--ly");
+    });
+  }
+
+  /* ---------- Hero sky: lights rising, like prayers going up ----------
+     A small particle field on a canvas. It runs only while the hero is on
+     screen and the tab is visible; the pointer draws lights toward it and
+     a click or tap sends up a burst. Never drawn under reduced motion. */
+  var hero = $(".hero");
+  var sky = $(".hero__sky");
+  if (hero && sky && sky.getContext && motionOK) {
+    (function () {
+      var ctx = sky.getContext("2d");
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var W = 0, H = 0, parts = [], sprites = [], running = false, visible = true, raf = 0;
+      var pointer = { x: -9999, y: -9999, active: false };
+      var palette, blend, strength = 1;
+
+      function sprite(rgb) {
+        var c = doc.createElement("canvas");
+        c.width = c.height = 64;
+        var g = c.getContext("2d");
+        var grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+        grad.addColorStop(0, "rgba(" + rgb + ",1)");
+        grad.addColorStop(0.25, "rgba(" + rgb + ",0.55)");
+        grad.addColorStop(1, "rgba(" + rgb + ",0)");
+        g.fillStyle = grad;
+        g.fillRect(0, 0, 64, 64);
+        return c;
+      }
+      function readTheme() {
+        var dark = activeTheme() === "dark";
+        palette = dark ? ["226,184,102", "240,162,127", "255,236,200"] : ["226,184,102", "214,150,70", "176,68,28"];
+        blend = dark ? "lighter" : "source-over";
+        strength = dark ? 1 : 0.6; // on sand, the lights are warmer and quieter
+        sprites = palette.map(sprite); // particles hold an index, so they survive a theme change
+      }
+      function make(x, y, burst) {
+        return {
+          x: x, y: y,
+          r: burst ? 1.5 + Math.random() * 3 : 0.8 + Math.random() * 2.6,
+          vx: burst ? (Math.random() - 0.5) * 1.6 : 0,
+          vy: burst ? -(0.9 + Math.random() * 1.6) : -(0.18 + Math.random() * 0.5),
+          phase: Math.random() * Math.PI * 2,
+          sway: 0.2 + Math.random() * 0.5,
+          life: 0,
+          max: burst ? 140 + Math.random() * 120 : 400 + Math.random() * 500,
+          c: Math.floor(Math.random() * 3)
+        };
+      }
+      function seed() {
+        var target = Math.max(28, Math.min(110, Math.round((W * H) / 9000)));
+        parts = [];
+        for (var i = 0; i < target; i++) {
+          var p = make(Math.random() * W, Math.random() * H, false);
+          p.life = Math.random() * p.max;
+          parts.push(p);
+        }
+        parts.target = target;
+      }
+      function resize() {
+        var r = hero.getBoundingClientRect();
+        W = r.width; H = r.height;
+        sky.width = Math.round(W * dpr); sky.height = Math.round(H * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        seed();
+      }
+      function frame(t) {
+        raf = 0;
+        if (!running) return;
+        ctx.clearRect(0, 0, W, H);
+        ctx.globalCompositeOperation = blend;
+        for (var i = parts.length - 1; i >= 0; i--) {
+          var p = parts[i];
+          p.life++;
+          p.vx *= 0.985;
+          var dx = p.x - pointer.x, dy = p.y - pointer.y, d2 = dx * dx + dy * dy;
+          var near = 0;
+          if (pointer.active && d2 < 26000) {
+            near = 1 - d2 / 26000;
+            p.vx -= dx * 0.0009 * near; // drawn gently toward the pointer
+            p.y -= 0.35 * near;
+          }
+          p.x += p.vx + Math.sin(t / 1400 + p.phase) * p.sway * 0.35;
+          p.y += p.vy;
+          var k = p.life / p.max;
+          var a = Math.min(1, k * 6) * (1 - k) * (0.55 + near * 0.45) * strength;
+          if (p.y < -20 || k >= 1) {
+            if (parts.length > parts.target) { parts.splice(i, 1); continue; }
+            parts[i] = make(Math.random() * W, H + 10 + Math.random() * 40, false);
+            continue;
+          }
+          var s = p.r * (6 + near * 4);
+          ctx.globalAlpha = a;
+          ctx.drawImage(sprites[p.c], p.x - s / 2, p.y - s / 2, s, s);
+        }
+        ctx.globalAlpha = 1;
+        raf = requestAnimationFrame(frame);
+      }
+      function sync() {
+        var should = visible && !doc.hidden;
+        if (should && !running) { running = true; if (!raf) raf = requestAnimationFrame(frame); }
+        else if (!should) { running = false; }
+      }
+
+      readTheme();
+      resize();
+      onThemeChange.push(readTheme);
+      if ("ResizeObserver" in window) new ResizeObserver(function () { resize(); }).observe(hero);
+      if (hasIO) new IntersectionObserver(function (e) { visible = e[0].isIntersecting; sync(); }).observe(hero);
+      doc.addEventListener("visibilitychange", sync);
+
+      var trail = 0;
+      hero.addEventListener("pointermove", function (e) {
+        var r = hero.getBoundingClientRect();
+        pointer.x = e.clientX - r.left; pointer.y = e.clientY - r.top; pointer.active = true;
+        if (++trail % 5 === 0 && parts.length < parts.target + 60) {
+          var p = make(pointer.x + (Math.random() - 0.5) * 30, pointer.y + (Math.random() - 0.5) * 30, false);
+          p.max = 160 + Math.random() * 120;
+          parts.push(p);
+        }
+      });
+      hero.addEventListener("pointerleave", function () { pointer.active = false; pointer.x = pointer.y = -9999; });
+      hero.addEventListener("click", function (e) {
+        if (e.target.closest("a, button, input, select, textarea, summary")) return;
+        var r = hero.getBoundingClientRect();
+        var x = e.clientX - r.left, y = e.clientY - r.top;
+        for (var i = 0; i < 26; i++) parts.push(make(x, y, true));
+      });
+      sync();
+    })();
   }
 
   /* ---------- Gatherings: countdown and calendar files ----------
@@ -193,22 +476,42 @@
   if (countdown) {
     var nameEl = $("[data-countdown-name]", countdown);
     var timeEl = $("[data-countdown-time]", countdown);
+    var clock = $("[data-clock]");
+    var cells = clock ? ["d", "h", "m", "s"].map(function (k) { return $("[data-clock-" + k + "]", clock); }) : [];
+    var setText = function (el, text) { if (el.textContent !== text) el.textContent = text; };
+    var setCell = function (el, text) {
+      if (el.textContent === text) return;
+      el.textContent = text;
+      el.classList.remove("tick");
+      void el.offsetWidth; // restart the roll-in
+      el.classList.add("tick");
+    };
+    var pad = function (n) { return (n < 10 ? "0" : "") + n; };
     var tick = function () {
       var now = Date.now();
       if (inProgress(GATHERINGS.sunday, now)) {
-        nameEl.textContent = "Sunday Celebration";
-        timeEl.textContent = "is under way now";
+        setText(nameEl, "Sunday Celebration");
+        setText(timeEl, "is under way now");
+        if (clock) clock.hidden = true;
         return;
       }
       var next = ["sunday", "friday"].map(function (k) {
         return { g: GATHERINGS[k], at: nextStart(GATHERINGS[k], now) };
       }).sort(function (a, b) { return a.at - b.at; })[0];
-      nameEl.textContent = next.g.name;
-      timeEl.textContent = humanise(next.at - now);
+      setText(nameEl, next.g.name);
+      setText(timeEl, humanise(next.at - now));
+      if (clock) {
+        var secs = Math.max(0, Math.floor((next.at - now) / 1000));
+        setCell(cells[0], String(Math.floor(secs / 86400)));
+        setCell(cells[1], pad(Math.floor((secs % 86400) / 3600)));
+        setCell(cells[2], pad(Math.floor((secs % 3600) / 60)));
+        setCell(cells[3], pad(secs % 60));
+        clock.hidden = false;
+      }
     };
     tick();
     countdown.hidden = false;
-    setInterval(tick, 30000);
+    setInterval(tick, clock ? 1000 : 30000);
   }
 
   function icsDate(ms) { return new Date(ms).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, ""); }
@@ -438,6 +741,8 @@
   syncRails();
   var railTimer;
   window.addEventListener("resize", function () { clearTimeout(railTimer); railTimer = setTimeout(syncRails, 150); });
+
+  runScrollHooks();
 
   /* ---------- Footer year ---------- */
   var year = $("#year");
