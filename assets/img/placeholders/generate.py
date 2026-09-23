@@ -24,7 +24,7 @@ def svg(name, w, h, label, body, glow=(0.72, 0.9)):
 </defs>
 <rect width="{w}" height="{h}" fill="url(#g)"/><rect width="{w}" height="{h}" fill="url(#l)"/>
 {body}
-<text x="{0.05*w:.0f}" y="{0.05*h + min(w,h)*0.032:.0f}" font-family="system-ui, sans-serif" font-size="{max(14, round(min(w,h)*0.032))}" fill="{SAND}" fill-opacity=".82">Photograph to come · {label}</text>
+<text x="{w/2:.0f}" text-anchor="middle" y="{0.05*h + min(w,h)*0.032:.0f}" font-family="system-ui, sans-serif" font-size="{max(14, round(min(w,h)*0.032))}" fill="{SAND}" fill-opacity=".82">Photograph to come · {label}</text>
 </svg>
 '''
     with open(os.path.join(OUT, name), "w") as f:

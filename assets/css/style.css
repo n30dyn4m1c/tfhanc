@@ -259,6 +259,7 @@ p a:not([class]), dd a { color: var(--accent); text-underline-offset: 0.2em; }
 }
 .menu-toggle { font-weight: 600; font-size: 0.9375rem; padding-inline: 0.8rem 0.95rem; }
 
+@media (max-width: 379px) { .brand__name span { display: none; } .brand__name { font-size: 0.9375rem; } }
 @media (min-width: 560px) { .header__cta { display: inline-flex; } }
 @media (min-width: 920px) {
   .nav { display: block; }
