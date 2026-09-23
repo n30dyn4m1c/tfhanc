@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<!-- Source for assets/img/og.png (1200 × 630). Render with tools/render-og.js. -->
+<html lang="en-GB"><head><meta charset="UTF-8"><style>
+@font-face { font-family: "Fraunces"; font-weight: 400 600; src: url("../assets/fonts/fraunces-roman.woff2") format("woff2"); }
+@font-face { font-family: "Fraunces"; font-style: italic; font-weight: 400; src: url("../assets/fonts/fraunces-italic.woff2") format("woff2"); }
+@font-face { font-family: "Figtree"; font-weight: 400 600; src: url("../assets/fonts/figtree.woff2") format("woff2"); }
+* { margin: 0; box-sizing: border-box; }
+html, body { width: 1200px; height: 630px; overflow: hidden; }
+body { background: #1c1224; color: #f4ece2; font-family: "Figtree", sans-serif; display: grid; grid-template-columns: 1fr 380px; }
+.text { padding: 72px 0 64px 80px; display: flex; flex-direction: column; }
+.brand { display: flex; align-items: center; gap: 16px; font: 600 24px/1.15 "Fraunces", serif; }
+.brand img { width: 64px; height: 64px; }
+.brand span span { display: block; font: 400 19px/1.3 "Figtree", sans-serif; color: #cbbfcc; }
+h1 { margin-top: 44px; font: 400 60px/1.04 "Fraunces", serif; letter-spacing: -0.02em; max-width: 640px; }
+blockquote { margin-top: 28px; padding-left: 20px; border-left: 3px solid #e2b866; font: italic 400 23px/1.4 "Fraunces", serif; max-width: 640px; }
+cite { display: block; margin-top: 8px; font: 600 17px "Figtree", sans-serif; font-style: normal; color: #cbbfcc; }
+.times { margin-top: auto; font-size: 20px; color: #e2b866; font-weight: 600; }
+.art { background: linear-gradient(#2a1934, #4a2b57 62%, #b0441c); position: relative; overflow: hidden; }
+.art::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 50% 35%, rgba(226,184,102,.55), transparent 65%); }
+.art svg { position: absolute; left: 50%; bottom: 0; width: 280px; transform: translateX(-50%); }
+</style></head><body>
+<div class="text">
+  <p class="brand"><img src="../assets/img/logo.svg" alt=""><span>The Father’s House <span>All Nations Church · Port Moresby, Papua New Guinea</span></span></p>
+  <h1>A praying family, standing for the healing of the land.</h1>
+  <blockquote>“…then will I hear from heaven … and will heal their land.”<cite>— 2 Chronicles 7:14 (KJV)</cite></blockquote>
+  <p class="times">Sunday 9:00 AM · Friday Prayer Night 7:00 PM</p>
+</div>
+<div class="art" aria-hidden="true"><svg viewBox="0 0 280 520"><path d="M10 520 V150 A130 130 0 0 1 270 150 V520" fill="none" stroke="#e2b866" stroke-width="2.5" stroke-opacity=".6"/><path d="M40 520 V165 A100 100 0 0 1 240 165 V520" fill="none" stroke="#e2b866" stroke-width="1.2" stroke-opacity=".35"/></svg></div>
+</body></html>
