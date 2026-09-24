@@ -82,12 +82,14 @@ that.*
 
 | Passage | Reference to use | Translation |
 |---|---|---|
-| "My house shall be called … a house of prayer for all nations." | **Mark 11:17** | (KJV) |
+| "Is it not written, 'My house shall be called a house of prayer for all the nations'?" | **Mark 11:17** | (NASB1995) |
 | "…then will I hear from heaven … and will heal their land." | **2 Chronicles 7:14** | (KJV) |
 | "The effectual fervent prayer of a righteous man availeth much." | **James 5:16** | (KJV) |
 | "Bring the whole tithe into the storehouse…" | **Malachi 3:10** | (NIV) |
+| "Peter therefore was kept in prison: but prayer was made without ceasing of the church unto God for him." (Friday Night Prayer) | **Acts 12:5** | (KJV) |
 | The First Commandment ("love the Lord your God…") | **Matthew 22:37** | reference, paraphrase context |
 | Confession of faith (salvation prayer) | grounded in **Romans 10:9** | paraphrase, not quoted |
+| "That if thou shalt confess with thy mouth the Lord Jesus…" (Begin here) | **Romans 10:9** | (KJV) |
 
 ---
 
