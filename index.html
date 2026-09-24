@@ -165,7 +165,6 @@
         <li><a href="#prayer">Prayer</a></li>
         <li><a href="#friday">Friday Night Prayer</a></li>
         <li><a href="#nations">The Nations</a></li>
-        <li><a href="#network">The Network</a></li>
         <li><a href="#prophetic-word">Prophetic Word</a></li>
         <li><a href="#leadership">Leadership</a></li>
         <li><a href="#messages">Messages</a></li>
@@ -422,99 +421,6 @@
       </div>
     </section>
 
-    <!-- ============================ The network ============================
-         Network churches and affiliated pastors, by province. To add a church,
-         copy an <li class="church"> into its province (or copy a whole
-         <li class="province">), and add a point to the chart if it is a new place.
-         Chart: x = (longitude − 145.5) × 100, y = (latitude south − 3.5) × 100. -->
-    <section class="network" id="network" aria-labelledby="network-title">
-      <div class="container">
-        <header class="network__head">
-          <p class="label"><span class="rule" aria-hidden="true"></span>The Father’s House Inc.</p>
-          <h2 class="display display--md reveal" id="network-title">One house. Churches across the land.</h2>
-          <p class="lead reveal">The Father’s House Inc. is a network of churches across Papua New Guinea. These are the network churches and affiliated pastors who stand with this house, province by province.</p>
-        </header>
-
-        <div class="network__grid">
-          <figure class="netmap reveal" aria-hidden="true">
-            <svg viewBox="0 0 760 700" focusable="false">
-              <path class="netmap__grid" d="M50 0V700M150 0V700M250 0V700M350 0V700M450 0V700M550 0V700M650 0V700M750 0V700M0 50H760M0 150H760M0 250H760M0 350H760M0 450H760M0 550H760M0 650H760"/>
-              <g class="netmap__ticks">
-                <text x="54" y="692">146°E</text><text x="354" y="692">149°E</text><text x="654" y="692">152°E</text>
-                <text x="6" y="146">5°S</text><text x="6" y="446">8°S</text>
-              </g>
-              <g class="netmap__routes">
-                <path d="M168 594 Q 90 440 76 277" pathLength="1"/>
-                <path d="M168 594 Q 300 250 550 183" pathLength="1"/>
-                <path d="M168 594 Q 560 560 670 84" pathLength="1"/>
-              </g>
-              <g class="netmap__points">
-                <g class="netmap__base" transform="translate(168 594)"><circle class="netmap__halo" r="22"/><circle r="9"/></g>
-                <g transform="translate(76 277)"><circle class="netmap__halo" r="16"/><circle r="6"/></g>
-                <g transform="translate(550 183)"><circle class="netmap__halo" r="16"/><circle r="6"/></g>
-                <g transform="translate(670 84)"><circle class="netmap__halo" r="16"/><circle r="6"/></g>
-              </g>
-              <g class="netmap__labels">
-                <text x="192" y="600"><tspan class="netmap__place">Port Moresby</tspan><tspan x="192" dy="1.6em">National Capital District</tspan></text>
-                <text x="98" y="283"><tspan class="netmap__place">Markham</tspan><tspan x="98" dy="1.6em">Morobe</tspan></text>
-                <text x="532" y="146" text-anchor="end"><tspan class="netmap__place">Bialla</tspan><tspan x="532" dy="1.6em">West New Britain</tspan></text>
-                <text x="648" y="68" text-anchor="end"><tspan class="netmap__place">Kokopo · Gazelle</tspan><tspan x="648" dy="1.6em">East New Britain</tspan></text>
-              </g>
-            </svg>
-          </figure>
-
-          <ol class="provinces">
-            <li class="province reveal">
-              <h3>National Capital District</h3>
-              <ul>
-                <li class="church church--base">
-                  <p class="church__where">Port Moresby · The base</p>
-                  <p class="church__name">All Nations Church</p>
-                  <p class="church__pastors">Senior Pastor Ben Minok, with his wife Jessica</p>
-                </li>
-              </ul>
-            </li>
-            <li class="province reveal">
-              <h3>Morobe Province</h3>
-              <ul>
-                <li class="church">
-                  <p class="church__where">Markham District</p>
-                  <p class="church__name">The Father’s House Inc.</p>
-                  <p class="church__pastors">Senior Pastor Bruce Keith and Pastor Esther Keith</p>
-                </li>
-              </ul>
-            </li>
-            <li class="province reveal">
-              <h3>East New Britain Province</h3>
-              <ul>
-                <li class="church">
-                  <p class="church__where">Vunamami Ward · Kokopo District</p>
-                  <p class="church__name">Vunamami Living Well Governing Church</p>
-                  <p class="church__pastors">Senior Pastor Wolly Takuru and Alice Wolly</p>
-                </li>
-                <li class="church">
-                  <p class="church__where">Vunadidir Ward · Gazelle District</p>
-                  <p class="church__name">Higher Ground Sanctuary</p>
-                  <p class="church__pastors">Senior Pastor Nathan Makap and Shirley Makap</p>
-                </li>
-              </ul>
-            </li>
-            <li class="province reveal">
-              <h3>West New Britain Province</h3>
-              <ul>
-                <li class="church">
-                  <p class="church__where">Bialla Resource Center · Bialla District</p>
-                  <p class="church__name">House of Legacy</p>
-                  <p class="church__pastors">Senior Pastor Charles Kiniva and Sharlotte Kiniva</p>
-                </li>
-              </ul>
-            </li>
-          </ol>
-        </div>
-        <p class="network__more">Details for further provinces will be added as they are published. Pastors and churches seeking relationship with the network can <a class="link" href="#connect" data-reason="other">write to the house<svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a></p>
-      </div>
-    </section>
-
     <!-- ============================ Prophetic word ============================
          The archive. Each word is an <article class="word" data-stream="…">;
          streams: house, png, global. The buttons filter (main.js).
@@ -661,6 +567,54 @@
               <button class="link" type="button" data-dialog="bio-jonathan">Read his biography<svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button>
             </div>
           </article>
+        </div>
+
+        <!-- The network: churches and affiliated pastors of The Father's House Inc.
+             by province. To add one, copy an <li class="netchurch"> into its province,
+             or copy a whole <div class="netprov"> (and add it to subOrganization in the JSON-LD). -->
+        <div class="network" id="network" aria-labelledby="network-title">
+          <div class="network__head">
+            <h3 id="network-title">The network</h3>
+            <p>The Father’s House Inc. is a network of churches across Papua New Guinea. Network churches and affiliated pastors, by province:</p>
+          </div>
+          <div class="netprovs">
+            <div class="netprov">
+              <h4>Morobe Province</h4>
+              <ul>
+                <li class="netchurch">
+                  <p class="netchurch__name">The Father’s House Inc.</p>
+                  <p class="netchurch__pastors">Senior Pastor Bruce Keith and Pastor Esther Keith</p>
+                  <p class="netchurch__where">Markham District</p>
+                </li>
+              </ul>
+            </div>
+            <div class="netprov">
+              <h4>East New Britain Province</h4>
+              <ul>
+                <li class="netchurch">
+                  <p class="netchurch__name">Vunamami Living Well Governing Church</p>
+                  <p class="netchurch__pastors">Senior Pastor Wolly Takuru and Alice Wolly</p>
+                  <p class="netchurch__where">Vunamami Ward, Kokopo District</p>
+                </li>
+                <li class="netchurch">
+                  <p class="netchurch__name">Higher Ground Sanctuary</p>
+                  <p class="netchurch__pastors">Senior Pastor Nathan Makap and Shirley Makap</p>
+                  <p class="netchurch__where">Vunadidir Ward, Gazelle District</p>
+                </li>
+              </ul>
+            </div>
+            <div class="netprov">
+              <h4>West New Britain Province</h4>
+              <ul>
+                <li class="netchurch">
+                  <p class="netchurch__name">House of Legacy</p>
+                  <p class="netchurch__pastors">Senior Pastor Charles Kiniva and Sharlotte Kiniva</p>
+                  <p class="netchurch__where">Bialla Resource Center, Bialla District</p>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <p class="network__more">Further provinces will be added as they are published.</p>
         </div>
 
         <aside class="serve reveal" aria-labelledby="serve-title">
@@ -1083,8 +1037,8 @@
             <li><a href="#about">About</a></li>
             <li><a href="#prayer">Prayer</a></li>
             <li><a href="#nations">The Nations</a></li>
-            <li><a href="#network">The Network</a></li>
             <li><a href="#leadership">Leadership</a></li>
+            <li><a href="#network">Network churches</a></li>
             <li><a href="#prophetic-word">Prophetic Word</a></li>
           </ul>
         </div>
