@@ -462,6 +462,45 @@ html:not(.js) .manifesto li { color: var(--champagne); }
 .spheres p { color: var(--soft); }
 @media (min-width: 900px) { .spheres { grid-template-columns: repeat(3, 1fr); } }
 
+/* ----- The network ----- */
+.network { padding-block: var(--section); background: radial-gradient(60% 50% at 20% 60%, rgb(91 22 143 / .3), transparent 70%), linear-gradient(180deg, var(--plum), #1b0529 50%, var(--plum)); border-top: 1px solid var(--line-soft); }
+.network__head { max-width: 50rem; }
+.network__head .lead { margin-top: 1.5rem; }
+.network__grid { display: grid; gap: 3rem; margin-top: clamp(3rem, 6vw, 5rem); align-items: start; }
+.netmap { position: relative; margin: 0; padding: clamp(1rem, 3vw, 2rem); border: 1px solid var(--line); background: radial-gradient(70% 60% at 30% 75%, rgb(201 162 39 / .08), transparent 70%), rgb(22 0 31 / .6); }
+.netmap::after { content: ""; position: absolute; inset: 6px; border: 1px solid var(--line-soft); pointer-events: none; }
+.netmap svg { width: 100%; height: auto; overflow: visible; }
+.netmap__grid { fill: none; stroke: rgb(201 167 232 / .09); stroke-width: 1; }
+.netmap__ticks { font: 600 13px/1 var(--sans); letter-spacing: .12em; fill: rgb(217 201 234 / .55); }
+.netmap__routes path { fill: none; stroke: var(--gold); stroke-width: 1.5; stroke-dasharray: 1; stroke-dashoffset: 0; opacity: .8; transition: stroke-dashoffset 2.2s var(--ease); }
+.netmap__routes path:nth-child(2) { transition-delay: .25s; }
+.netmap__routes path:nth-child(3) { transition-delay: .5s; }
+.netmap.pre-reveal .netmap__routes path { stroke-dashoffset: 1; }
+.netmap__points circle { fill: var(--champagne); }
+.netmap__points .netmap__halo { fill: rgb(229 199 107 / .16); stroke: rgb(229 199 107 / .5); stroke-width: 1; transform-box: fill-box; transform-origin: center; animation: halo 3.2s ease-out infinite; }
+.netmap__points g:nth-child(2) .netmap__halo { animation-delay: .8s; }
+.netmap__points g:nth-child(3) .netmap__halo { animation-delay: 1.6s; }
+.netmap__points g:nth-child(4) .netmap__halo { animation-delay: 2.4s; }
+.netmap__labels text { font: 500 15px/1 var(--sans); fill: var(--soft); }
+.netmap__labels .netmap__place { font: 600 21px/1 var(--display); fill: var(--fg); letter-spacing: .04em; }
+.provinces { display: grid; gap: 2rem; }
+.province h3 { display: flex; align-items: center; gap: .75rem; font: 600 .8125rem/1.4 var(--sans); letter-spacing: .2em; text-transform: uppercase; color: var(--champagne); padding-bottom: .75rem; border-bottom: 1px solid var(--line); }
+.province h3::before { content: ""; width: 7px; height: 7px; transform: rotate(45deg); background: var(--gold); flex: none; }
+.province ul { display: grid; gap: 1px; }
+.church { padding: 1.25rem 0 1.25rem 1.25rem; border-bottom: 1px solid var(--line-soft); transition: background-color .4s, padding-left .4s var(--ease); }
+.church:hover { background: rgb(91 22 143 / .18); padding-left: 1.6rem; }
+.church__where { font: 600 .75rem/1.5 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--soft); }
+.church__name { margin-top: .35rem; font: 500 clamp(1.25rem, 2vw, 1.5rem)/1.2 var(--display); color: var(--fg); }
+.church__pastors { margin-top: .35rem; font: italic 500 1.2rem/1.35 var(--voice); color: var(--champagne); }
+.church--base .church__where { color: var(--champagne); }
+.network__more { margin-top: clamp(2.5rem, 5vw, 3.5rem); color: var(--soft); max-width: 46rem; }
+.network__more .link { margin-left: .25rem; }
+@media (min-width: 1000px) {
+  .network__grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 5rem; }
+  .netmap { position: sticky; top: calc(var(--header-h) + 2rem); }
+}
+@keyframes halo { 0% { transform: scale(.6); opacity: 1; } 100% { transform: scale(1.9); opacity: 0; } }
+
 /* ----- Prophetic word ----- */
 .prophetic { padding-block: var(--section); isolation: isolate; }
 .prophetic__scene { bottom: auto; height: min(90vh, 56rem); }
@@ -773,4 +812,9 @@ html:not(.js) .manifesto li { color: var(--champagne); }
   .decree span + span::before { display: none; }
   .portrait { aspect-ratio: 1 / 1; }
   .hero__actions .btn { flex: 1 1 100%; }
+}
+@media (max-width: 699px) {
+  .netmap__labels text { font-size: 25px; }
+  .netmap__labels .netmap__place { font-size: 30px; }
+  .netmap__ticks { font-size: 20px; }
 }

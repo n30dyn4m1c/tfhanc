@@ -57,15 +57,16 @@ STYLE_GUIDE.md             voice and Scripture citation rules
 3. **Prayer** (`#prayer`): the four pillars, James 5:16, and the manifesto
 4. **Friday Night Prayer** (`#friday`): 7:00–10:00 PM at Taurama Aquatic Centre Lounge, the theme *Breaking into the Spirit of Prayer* in five movements, Acts 12:5, transport after prayer
 5. **The Nations** (`#nations`): Papua New Guinea, the Pacific, the nations
-6. **Prophetic Word** (`#prophetic-word`): Prophecies, PNG prophetic words, Global words, and Archive; each word links to its original graphic
-7. **Leadership:** Pastor Ben Minok and Dr Jonathan David, with biographies in dialogs
-8. **Messages:** the featured message (YouTube loads only on play) and three channels
-9. **Conferences:** three gatherings, dates to be announced
-10. **Begin here** (`#begin`): Believe, Confess, Tell the house; the prayer; Romans 10:9; a short form
-11. **Giving:** Malachi 3:10, and bank details on request
-12. **Plan your visit** (`#visit`): Sunday Celebration at Gordon International School and Friday Night Prayer at Taurama Aquatic Centre Lounge, with calendar files, a map that switches between the two venues, directions, and what to expect
-13. **Send a prayer request** (`#connect`): contact details and the form
-14. **Footer:** decree, emblem, navigation, gatherings, socials, registration
+6. **The Network** (`#network`): network churches and affiliated pastors of The Father's House Inc., by province, with a chart of their places linked to Port Moresby
+7. **Prophetic Word** (`#prophetic-word`): Prophecies, PNG prophetic words, Global words, and Archive; each word links to its original graphic
+8. **Leadership:** Pastor Ben Minok and Dr Jonathan David, with biographies in dialogs
+9. **Messages:** the featured message (YouTube loads only on play) and three channels
+10. **Conferences:** three gatherings, dates to be announced
+11. **Begin here** (`#begin`): Believe, Confess, Tell the house; the prayer; Romans 10:9; a short form
+12. **Giving:** Malachi 3:10, and bank details on request
+13. **Plan your visit** (`#visit`): Sunday Celebration at Gordon International School and Friday Night Prayer at Taurama Aquatic Centre Lounge, with calendar files, a map that switches between the two venues, directions, and what to expect
+14. **Send a prayer request** (`#connect`): contact details and the form
+15. **Footer:** decree, emblem, navigation, gatherings, socials, registration
 
 ## Changing service times
 
@@ -74,6 +75,10 @@ Open `assets/js/main.js`. The first block, **CHANGE SERVICE TIMES HERE**, holds 
 ## Connecting the forms to a form service
 
 There are two forms: the main one (`#connect-form`) and the short "I prayed this" form in Begin here (`#begin-form`). By default, each opens the visitor's email app addressed to info@tfhanc.org. To receive messages directly, create a form at [Formspree](https://formspree.io), [Getform](https://getform.io) or [Basin](https://usebasin.com), and put its endpoint URL in each form's `data-endpoint`. If the service cannot be reached, the form falls back to email on its own.
+
+## Adding a network church
+
+In `index.html`, find the `#network` section. Copy an `<li class="church">` into its province's list, or copy a whole `<li class="province">` for a new province. For a new place, add a point, a route and a label to the chart; the comment above the section gives the formula from longitude and latitude to chart position. Add the church to `subOrganization` in the JSON-LD as well.
 
 ## Adding a prophetic word
 
