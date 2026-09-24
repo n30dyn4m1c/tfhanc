@@ -1,145 +1,121 @@
 # The Father's House, All Nations Church
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![HTML](https://img.shields.io/badge/HTML-5-E34F26?logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
-[![CSS](https://img.shields.io/badge/CSS-3-1572B6?logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
-[![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![GitHub Pages](https://img.shields.io/badge/Demo-GitHub%20Pages-222222?logo=github&logoColor=white)](https://n30dyn4m1c.github.io/tfhanc/)
+[![GitHub Pages](https://img.shields.io/badge/Live-GitHub%20Pages-222222?logo=github&logoColor=white)](https://n30dyn4m1c.github.io/tfhanc/)
 
-**Official website for The Father's House, All Nations Church (TFH ANC), Port Moresby, Papua New Guinea.**
+**The website of The Father's House, All Nations Church (TFH ANC), a house of prayer in Port Moresby, Papua New Guinea.**
 
 > Executing the Mandate. Advancing the Kingdom. It is now.
 
-A fast static site with no build step, no framework and no server. The design, "Evening at the house", uses the colours of a Port Moresby dusk: sand for the day, deep plum for the night of prayer, ember for the altar fire and for action, and gold for light on the night. The page follows a first-time visitor's questions in order: what this place is, when and where to come, what will happen, who leads, and how to reach the house.
+This is a static site: plain HTML, CSS and JavaScript, with no framework, no build step and no server. It is hosted on GitHub Pages.
 
-**Live site:** [https://n30dyn4m1c.github.io/tfhanc/](https://n30dyn4m1c.github.io/tfhanc/)
+**Live site:** <https://n30dyn4m1c.github.io/tfhanc/>
+
+## The design: "Heaven's authority touching earth"
+
+The site is the logo expanded into a world. The logo shows a royal purple eagle whose wing sweeps around a globe, with a family standing on it, in gold. The page follows the same vertical axis, from Heaven (deep purple sky) through gold light breaking through to the earth (the ridges of Papua New Guinea).
+
+- **Colour:** purple is identity (`#16001F` plum, `#2A0845` royal, `#5B168F`, `#7B2CBF`), gold is glory (`#C9A227`, `#E5C76B`), ivory is heavenly light (`#F8F5EF`). "Begin here" is the one ivory section.
+- **Type:** Cinzel for proclamations (it echoes the logo's capitals), Cormorant Garamond italic for Scripture and the voice of the house, DM Sans for everything a visitor acts on.
+- **Motifs, used sparingly:** the gold *meridian* rule (from the globe's lines), the *orbit* (the wing's sweep), the eagle three times (hero, Friday, footer seal), and the globe once (Nations).
+- **Motion:** the hero settles, clouds and light drift, and scenes parallax gently. Content rises in, rules draw across, and the manifesto lines turn gold as they are read. Under `prefers-reduced-motion`, nothing moves.
+
+The full system is in [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md).
+
+## Run it locally
+
+```sh
+python3 -m http.server 8000
+# then open http://localhost:8000
+```
+
+## Files
+
+```text
+index.html                 the whole site: every section, the icon sprite, JSON-LD, Open Graph
+assets/css/style.css       tokens, type, components, sections in page order, motion
+assets/js/main.js          SERVICE TIMES at the top, then header, parallax, dialogs, reveals,
+                           next gathering, calendar files, filters, forms, dock
+assets/fonts/              self-hosted Cinzel, Cormorant Garamond, DM Sans (woff2, SIL OFL)
+assets/img/emblem-*        the logo emblem, cut out of the supplied logo (transparent)
+assets/img/scenes/         cinematic scenes as WebP in three widths (see docs/PHOTO_BRIEFS.md)
+assets/img/words/          the house's own graphics, shown full size from the Prophetic Word
+                           and Friday sections
+assets/img/og.jpg          1200 × 630 share image, rendered from tools/og.html
+docs/DESIGN_SYSTEM.md      the design system
+docs/PHOTO_BRIEFS.md       which images are generated, and how to replace them with photographs
+tools/build-images.py      builds assets/img/scenes/ from master images (Pillow)
+tools/contrast.js          WCAG contrast check for every colour pair: node tools/contrast.js
+tools/og.html              source for og.jpg (render: node tools/render-og.js)
+STYLE_GUIDE.md             voice and Scripture citation rules
+```
 
 ## Page order
 
-1. **Hero:** the statement, 2 Chronicles 7:14 (KJV), both gatherings, and a countdown to whichever gathering comes next
-2. **Plan your visit:** times, venue, directions, "Add to calendar", what to expect
-3. **Who we are:** the house, Mark 11:17, the Record (a formal register of institutional facts), and the three pillars
-4. **Why we pray** (night section): James 5:16 set as a large spread, and four convictions
-5. **Leadership:** portrait cards with the full biography in a dialog
-6. **Messages:** the featured sermon (loads YouTube only when clicked) and channel links
-7. **Begin here** (night section): the prayer of salvation
-8. **Prophetic word:** three streams and a register for dated words
-9. **Conferences:** events with date slots
-10. **Giving:** Malachi 3:10 (NIV)
-11. **Connect:** contact details and the prayer request form
-12. **Footer:** seal, motto, grouped links, gatherings, registration line
+1. **Hero:** The Father's House, All Nations Church; "A praying family, standing for the healing of the land"; the decree; Plan your visit and Join us in prayer; both gatherings with their venues, and the next one, live
+2. **A house of prayer** (`#about`): for a nation, for the nations; Mark 11:17; Prayer, Word, Presence; the record
+3. **Prayer** (`#prayer`): the four pillars, James 5:16, and the manifesto
+4. **Friday Night Prayer** (`#friday`): 7:00–10:00 PM at Taurama Aquatic Centre Lounge, the theme *Breaking into the Spirit of Prayer* in five movements, Acts 12:5, transport after prayer
+5. **The Nations** (`#nations`): Papua New Guinea, the Pacific, the nations
+6. **Prophetic Word** (`#prophetic-word`): Prophecies, PNG prophetic words, Global words, and Archive; each word links to its original graphic
+7. **Leadership:** Pastor Ben Minok and Dr Jonathan David, with biographies in dialogs
+8. **Messages:** the featured message (YouTube loads only on play) and three channels
+9. **Conferences:** three gatherings, dates to be announced
+10. **Begin here** (`#begin`): Believe, Confess, Tell the house; the prayer; Romans 10:9; a short form
+11. **Giving:** Malachi 3:10, and bank details on request
+12. **Plan your visit** (`#visit`): Sunday Celebration at Gordon International School and Friday Night Prayer at Taurama Aquatic Centre Lounge, with calendar files, a map that switches between the two venues, directions, and what to expect
+13. **Send a prayer request** (`#connect`): contact details and the form
+14. **Footer:** decree, emblem, navigation, gatherings, socials, registration
 
-## Features
+## Changing service times
 
-- Light and dark themes: follows the system setting, with a manual toggle remembered in `localStorage`
-- A sticky header that highlights the active section; below 920px, a focus-trapped menu that closes with Escape
-- A floating "Send a prayer request" button that appears after the hero
-- Generated `.ics` calendar files for Sunday Celebration and Breakthrough Prayer Night
-- A contact form with inline validation, a copy-address button, and a `mailto:` fallback. It can post to a form service instead (see below).
-- Swipeable card rails on phones to keep the page short; everything stacks or sits in grids on wider screens
-- Motion design, all of it optional enhancement:
-  - **Hero:** a dusk glow with rising lights ("prayers going up") drawn on a canvas. The lights lean toward the pointer, and a click or tap sends up a burst. The canvas runs only while the hero is on screen.
-  - **Entrance:** the hero photograph opens through the door-arch from the mark, and the headline rises word by word.
-  - **Live clock:** the next gathering counts down in days, hours, minutes and seconds.
-  - **Scroll:** headings rise as they arrive, cards reveal in a stagger, photographs drift with a gentle parallax (CSS scroll timelines), and a reading-progress line runs under the header.
-  - **Scripture:** James 5:16 lights up word by word as it is read.
-  - **Pointer:** cards catch the light under the pointer, and the hero buttons lean toward it.
-  - **Motto:** a ribbon carries the motto across the page.
-  - **Begin here:** a flame flickers, and a warm light follows the pointer.
-  - **Footer:** the seal's ring turns as the page is read.
-  - **Theme toggle:** the new theme spreads out in a circle from the toggle (View Transitions).
-- Honours `prefers-reduced-motion`: nothing moves, nothing is hidden, and the canvas is not drawn. Split headings keep their whole text for screen readers.
-- Self-hosted fonts (Fraunces and Figtree, `woff2`, `font-display: swap`); deferred JS; one CSS file under 40 KB
-- Open Graph and Twitter cards, a canonical link, and `Church` JSON-LD with both weekly gatherings
+Open `assets/js/main.js`. The first block, **CHANGE SERVICE TIMES HERE**, holds each gathering's day, start and end time, venue (`place`, used in calendar files, and `map`, the map search), and the timezone (`Pacific/Port_Moresby`). The next-gathering line and the calendar files read from it. The words on the page are plain HTML, so also search `index.html` for `9:00 AM`, `1:30 PM`, `7:00 PM` and `10:00 PM`, and for `"startTime"` and `"endTime"` in the JSON-LD.
 
-## Structure
+## Connecting the forms to a form service
 
-```text
-index.html                       the whole site (single page)
-assets/css/style.css             design system: tokens, themes, components (header comment explains it)
-assets/js/main.js                theme, menu and dialogs, nav, countdown, calendar, video, form
-assets/fonts/                    self-hosted woff2 fonts (SIL Open Font License)
-assets/img/logo.svg              the eagle-through-the-door mark (header, favicon, seal)
-assets/img/og.png                social sharing card, rendered from tools/og.html
-assets/img/placeholders/         duotone stand-ins for photographs (generate.py rebuilds them)
-tools/contrast.js                WCAG contrast check for every colour pair: node tools/contrast.js
-tools/og.html, render-og.js      source and renderer for og.png
-STYLE_GUIDE.md                   editorial voice and Scripture citation rules
-```
+There are two forms: the main one (`#connect-form`) and the short "I prayed this" form in Begin here (`#begin-form`). By default, each opens the visitor's email app addressed to info@tfhanc.org. To receive messages directly, create a form at [Formspree](https://formspree.io), [Getform](https://getform.io) or [Basin](https://usebasin.com), and put its endpoint URL in each form's `data-endpoint`. If the service cannot be reached, the form falls back to email on its own.
 
-## Replacing placeholder content
+## Adding a network church
 
-Every slot that still needs real content is marked in `index.html` with a comment that begins `CONTENT NEEDED:`. To list them all:
+In `index.html`, find `#network` inside the Leadership section. Copy an `<li class="netchurch">` into its province, or copy a whole `<div class="netprov">` for a new province. Add the church to `subOrganization` in the JSON-LD as well.
+
+## Adding a prophetic word
+
+In `index.html`, copy an `<article class="word" data-stream="…">` inside `[data-words]`, newest first. `data-stream` is `house` (Prophecies), `png` (PNG prophetic words) or `global` (Global words). To link the original graphic, save it as WebP in `assets/img/words/` and copy the `data-dialog="graphic"` button pattern. Only publish words the house has released.
+
+## Content checklist
 
 ```sh
-grep -n "CONTENT NEEDED" index.html
+grep -n "CONTENT NEEDED\|PHOTO SLOT" index.html
 ```
 
-### Photographs
-
-| Slot | File to replace | Suggested size |
+| Item | Where | What to do |
 |---|---|---|
-| Hero (congregation at Sunday Celebration) | `assets/img/placeholders/hero.svg` | 1200 × 1400, portrait |
-| Venue (Taurama Aquatic Centre Lounge) | `assets/img/placeholders/venue.svg` | 1200 × 900 |
-| Breakthrough Prayer Night band | `assets/img/placeholders/prayer-night.svg` | 1600 × 720, wide |
-| Pastor Ben Minok | `assets/img/placeholders/portrait-ben.svg` | 800 × 1000, 4:5 |
-| Dr Jonathan David (with permission) | `assets/img/placeholders/portrait-jonathan.svg` | 800 × 1000, 4:5 |
-| Featured sermon thumbnail | `assets/img/placeholders/sermon.svg` | 1280 × 720, 16:9 |
+| Real photographs | `assets/img/scenes/`, portraits | Follow `docs/PHOTO_BRIEFS.md`. Replace the generated worship crowd first. |
+| PNG prophetic words | Prophetic Word | Add `data-stream="png"` entries |
+| Featured message | Messages, `data-video-id` | Paste the YouTube ID, and set the title and caption |
+| Bank details | Giving, `.slip__rows` | Fill each `<dd>`, and remove `slip__blank` |
+| Conference dates | Conferences, `.conf__date` | Replace with `<time datetime="YYYY-MM-DD">…</time>` |
+| Children's ministry, parking, PMV routes to each venue | Plan your visit, `.expect` | Replace the "to be published" text |
 
-To swap a photograph:
+## Copy
 
-1. Save a compressed JPEG or WebP (ideally under 250 KB) in `assets/img/`, for example `assets/img/hero.jpg`.
-2. In `index.html`, change the `<img>` `src`, set `width` and `height` to the new file's real pixel size (this prevents layout shift), and rewrite the `alt` text to describe the photograph. Replace "Placeholder for a photograph of…" with what the picture actually shows.
-3. Delete the `CONTENT NEEDED` comment above it.
+Copy follows `STYLE_GUIDE.md`. Scripture is quoted exactly, with reference and translation: Mark 11:17 (NASB1995), James 5:16 (KJV), Acts 12:5 (KJV), Romans 10:9 (KJV) and Malachi 3:10 (NIV). The site states only facts the house has published: its earlier site, and its own Friday Night Prayer, 2026 and prophetic graphics. Nothing here invents dates, testimonies, account numbers or prophetic texts, and nothing should be added that does.
 
-Images are cropped to their frames with `object-fit: cover`, so any reasonable aspect ratio works.
+## Quality checks
 
-### Featured sermon
-
-In the Messages section, put the YouTube video ID in `data-video-id` on the `<figure class="video">`. For `https://www.youtube.com/watch?v=abc123XYZ`, the ID is `abc123XYZ`. Also update `data-video-title` and the caption text. With an ID set, a click loads the video from `youtube-nocookie.com` in place. With no ID, the poster links to the channel.
-
-### Form service
-
-The form opens the visitor's email app by default. To receive submissions through a service such as Formspree, put the service's URL in the form's `data-endpoint` attribute:
-
-```html
-<form class="form" id="connect-form" ... data-endpoint="https://formspree.io/f/your-id">
-```
-
-If a submission to the endpoint fails, the form falls back to email automatically.
-
-### Other slots
-
-- **Dated prophetic words:** copy the commented `<article class="word">` pattern in the Prophetic word section, one per word, newest first, and remove the "being prepared" entry.
-- **Conference dates:** replace each "Dates to be announced" with `<time datetime="YYYY-MM-DD">…</time>`.
-- **Children's ministry, parking and transport, the Prayer Night closing time, giving details:** replace the dashed `<span class="tbc">` notes in the relevant section.
-
-## Editing colours and type
-
-All colours are CSS custom properties at the top of `assets/css/style.css`. Components use only the semantic tokens (`--bg`, `--fg`, `--accent`, and so on). An element with the `night` class swaps in the night set, and the dark theme redefines the same tokens. The dark theme is written twice, once for the system setting and once for the manual toggle, and the two blocks must stay identical. After changing any colour, run:
-
-```sh
-node tools/contrast.js
-```
-
-It checks every text and UI pair against WCAG 2.2 AA in light, dark and night contexts, and it fails if the two dark blocks differ.
-
-Copy follows `STYLE_GUIDE.md`. Cite Scripture exactly, with its reference and translation, e.g. *2 Chronicles 7:14 (KJV)*.
+- `node tools/contrast.js`: 30 text and background pairs, all WCAG 2.2 AA.
+- Checked in Chromium at 1440 × 900 and 390 × 844: no horizontal scroll, and no console errors.
+- Tested: the menu, biography and graphic dialogs (focus returns to the opener), archive filters, form validation and prefill, calendar files, reduced motion (nothing hidden), and without JavaScript (all content visible).
 
 ## Hosting on GitHub Pages
 
-1. Go to **Settings → Pages**.
-2. Under **Build and deployment**, set **Source** to *Deploy from a branch*.
-3. Choose the `main` branch and the `/ (root)` folder, then **Save**.
-4. The site will be live at `https://n30dyn4m1c.github.io/tfhanc/` within a minute or two.
-
-The `.nojekyll` file tells GitHub Pages to serve the files as they are. All paths are relative, so the site works under `/tfhanc/`.
+In **Settings → Pages**, set **Source** to *Deploy from a branch*, choose `main` and `/ (root)`, and save. All paths are relative, so the site works under `/tfhanc/`.
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE). The fonts are licensed under the SIL Open Font License 1.1.
+[MIT](LICENSE). The fonts are under the SIL Open Font License 1.1.
 
 ## Author
 
-**Neo Malesa**  
-[GitHub](https://github.com/n30dyn4m1c)
+**Neo Malesa** · [GitHub](https://github.com/n30dyn4m1c)

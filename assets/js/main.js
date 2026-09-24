@@ -1,7 +1,40 @@
 /* The Father's House, All Nations Church · site behaviour
-   Vanilla JS, loaded with defer. Everything degrades gracefully: without JS
-   the page is complete, the form falls back to a mailto: action, and the
-   countdown, calendar links and floating button simply do not appear. */
+   Plain JavaScript, no libraries, loaded with `defer`.
+   Without JavaScript the page is still complete: every section shows, the
+   forms fall back to email, and only the extras (next gathering, calendar
+   files, filters, motion) are missing. */
+
+/* ==========================================================================
+   CHANGE SERVICE TIMES HERE
+   --------------------------------------------------------------------------
+   • day:   0 = Sunday … 5 = Friday, 6 = Saturday
+   • place: the venue, for calendar files; map: the search used for the map
+   • start / end: 24-hour clock, "HH:MM", in the house's own time zone
+   • timeZone: IANA name. Port Moresby is "Pacific/Port_Moresby" (UTC+10, no
+     daylight saving). fixedOffsetHours is used only by very old browsers.
+
+   If you change a time here, also change the words on the page: search
+   index.html for "9:00 AM", "1:30 PM", "7:00 PM" and "10:00 PM" (visible
+   text, meta description, and the JSON-LD "startTime"/"endTime").
+   ========================================================================== */
+var HOUSE = {
+  timeZone: "Pacific/Port_Moresby",
+  fixedOffsetHours: 10,
+  siteUrl: "https://n30dyn4m1c.github.io/tfhanc/",
+  gatherings: {
+    sunday: {
+      name: "Sunday Celebration", day: 0, start: "09:00", end: "13:30",
+      place: "Gordon International School, Gordon, Port Moresby, Papua New Guinea",
+      map: "Gordon International School, Port Moresby"
+    },
+    friday: {
+      name: "Friday Night Prayer", day: 5, start: "19:00", end: "22:00",
+      place: "Taurama Aquatic Centre Lounge, Port Moresby, Papua New Guinea",
+      map: "Taurama Aquatic Centre, Port Moresby"
+    }
+  }
+};
+
 (function () {
   "use strict";
 
@@ -10,98 +43,113 @@
   var $ = function (sel, ctx) { return (ctx || doc).querySelector(sel); };
   var $$ = function (sel, ctx) { return Array.prototype.slice.call((ctx || doc).querySelectorAll(sel)); };
   var hasIO = "IntersectionObserver" in window;
-  var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-  var motionOK = !reducedMotion;
-  if (finePointer) root.classList.add("has-hover");
-  var onThemeChange = []; // redraw hooks (the hero sky reads theme colours)
+  var motionOK = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var announcer = $("#announcer");
 
   function announce(msg) {
     if (!announcer) return;
     announcer.textContent = "";
-    setTimeout(function () { announcer.textContent = msg; }, 50);
+    setTimeout(function () { announcer.textContent = msg; }, 60);
   }
 
-  /* ---------- Theme toggle (persists in localStorage) ---------- */
-  var darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
-  function activeTheme() {
-    var t = root.getAttribute("data-theme");
-    return t || (darkQuery.matches ? "dark" : "light");
-  }
-  function syncThemeToggles() {
-    var dark = activeTheme() === "dark";
-    $$("[data-theme-toggle]").forEach(function (btn) {
-      btn.setAttribute("aria-label", dark ? "Switch to light theme" : "Switch to dark theme");
+  /* ---------- Time in Port Moresby ---------- */
+  var MIN = 60000, DAY = 86400000;
+  var tzFormat = null;
+  try {
+    tzFormat = new Intl.DateTimeFormat("en-GB", {
+      timeZone: HOUSE.timeZone, hourCycle: "h23",
+      year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit"
     });
-    var meta = $$('meta[name="theme-color"]');
-    if (root.hasAttribute("data-theme")) {
-      meta.forEach(function (m) { m.setAttribute("content", dark ? "#1a1120" : "#f5ede1"); });
+  } catch (e) { tzFormat = null; }
+
+  // Milliseconds to add to a UTC instant to read the house's wall clock.
+  function offsetAt(ms) {
+    if (!tzFormat || !tzFormat.formatToParts) return HOUSE.fixedOffsetHours * 3600000;
+    var p = {};
+    tzFormat.formatToParts(new Date(ms)).forEach(function (x) { p[x.type] = +x.value; });
+    var asUTC = Date.UTC(p.year, p.month - 1, p.day, p.hour % 24, p.minute, p.second);
+    return Math.round((asUTC - ms) / MIN) * MIN;
+  }
+  function hm(s) { var a = s.split(":"); return { h: +a[0], m: +a[1] }; }
+  function clock(s) { var t = hm(s); return (t.h % 12 || 12) + ":" + (t.m < 10 ? "0" : "") + t.m + (t.h < 12 ? " AM" : " PM"); }
+
+  // The next start of a gathering strictly after `now` (UTC milliseconds).
+  function nextStart(g, now) {
+    var off = offsetAt(now);
+    var wall = new Date(now + off);
+    var t = hm(g.start);
+    for (var i = 0; i <= 7; i++) {
+      var cand = Date.UTC(wall.getUTCFullYear(), wall.getUTCMonth(), wall.getUTCDate() + i, t.h, t.m);
+      if (new Date(cand).getUTCDay() !== g.day) continue;
+      var utc = cand - offsetAt(cand - off);
+      if (utc > now) return utc;
     }
+    return now + 7 * DAY;
   }
-  function themeChanged() {
-    syncThemeToggles();
-    onThemeChange.forEach(function (fn) { fn(); });
-  }
-  $$("[data-theme-toggle]").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      var next = activeTheme() === "dark" ? "light" : "dark";
-      var apply = function () {
-        root.setAttribute("data-theme", next);
-        try { localStorage.setItem("tfh-theme", next); } catch (e) { /* storage unavailable */ }
-        themeChanged();
-      };
-      // The new theme spreads out in a circle from the toggle.
-      if (!doc.startViewTransition || !motionOK) { apply(); return; }
-      var r = btn.getBoundingClientRect();
-      var x = r.left + r.width / 2, y = r.top + r.height / 2;
-      var end = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
-      doc.startViewTransition(apply).ready.then(function () {
-        root.animate(
-          { clipPath: ["circle(0px at " + x + "px " + y + "px)", "circle(" + end + "px at " + x + "px " + y + "px)"] },
-          { duration: 700, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)", pseudoElement: "::view-transition-new(root)" }
-        );
-      }, function () { /* transition skipped; the theme is already applied */ });
+  function lengthOf(g) { var s = hm(g.start), e = hm(g.end); return ((e.h * 60 + e.m) - (s.h * 60 + s.m)) * MIN; }
+  function gatheredNow(now) {
+    var found = null;
+    Object.keys(HOUSE.gatherings).forEach(function (key) {
+      var g = HOUSE.gatherings[key];
+      var last = nextStart(g, now - 7 * DAY);
+      while (nextStart(g, last) <= now) last = nextStart(g, last);
+      if (last <= now && now < last + lengthOf(g)) found = { key: key, g: g };
     });
-  });
-  if (darkQuery.addEventListener) darkQuery.addEventListener("change", themeChanged);
-  syncThemeToggles();
+    return found;
+  }
+  function soonest(now) {
+    return Object.keys(HOUSE.gatherings).map(function (key) {
+      return { key: key, g: HOUSE.gatherings[key], at: nextStart(HOUSE.gatherings[key], now) };
+    }).sort(function (a, b) { return a.at - b.at; })[0];
+  }
+  function likelyGathering(now) { var on = gatheredNow(now); return on ? on.key : soonest(now).key; }
 
-  /* ---------- Scroll-linked state (one rAF per frame at most) ----------
-     Header border, the reading-progress line, the footer seal's turn, and
-     James 5:16 lighting up word by word. */
+  /* ---------- One scroll loop for everything scroll-linked ---------- */
   var header = $("#header");
-  var footer = $(".footer");
   var scrollHooks = [];
-  var lastProgress = -1;
-  scrollHooks.push(function () {
-    var max = doc.documentElement.scrollHeight - window.innerHeight;
-    var p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
-    header.classList.toggle("is-scrolled", window.scrollY > 8);
-    if (Math.abs(p - lastProgress) < 0.0005) return;
-    lastProgress = p;
-    header.style.setProperty("--progress", p.toFixed(4));
-    if (footer && motionOK) footer.style.setProperty("--progress", p.toFixed(4));
-  });
-  var scrollQueued = false;
-  function runScrollHooks() {
-    scrollQueued = false;
-    scrollHooks.forEach(function (fn) { fn(); });
-  }
-  function onScroll() {
-    if (scrollQueued) return;
-    scrollQueued = true;
-    requestAnimationFrame(runScrollHooks);
-  }
+  var queued = false;
+  function runScroll() { queued = false; scrollHooks.forEach(function (fn) { fn(); }); }
+  function onScroll() { if (!queued) { queued = true; requestAnimationFrame(runScroll); } }
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onScroll, { passive: true });
 
-  /* ---------- Modal dialogs: menu and biographies ----------
-     Native <dialog> with showModal() makes the page behind inert. We add a
-     Tab trap, backdrop-click to close, and explicit focus restoration. */
-  var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
+  scrollHooks.push(function () {
+    var max = root.scrollHeight - window.innerHeight;
+    var p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+    header.classList.toggle("is-scrolled", window.scrollY > 24);
+    header.style.setProperty("--progress", p.toFixed(4));
+  });
 
-  function trapTab(dialog) {
+  /* Parallax: elements with data-parallax="speed" drift as they pass. */
+  if (motionOK) {
+    var layers = $$("[data-parallax]");
+    scrollHooks.push(function () {
+      var vh = window.innerHeight;
+      layers.forEach(function (el) {
+        var box = (el.parentElement || el).getBoundingClientRect();
+        if (box.bottom < -200 || box.top > vh + 200) return;
+        var speed = parseFloat(el.getAttribute("data-parallax")) || 0.15;
+        var shift = (box.top + box.height / 2 - vh / 2) * -speed;
+        el.style.transform = "translate3d(0," + shift.toFixed(1) + "px,0) scale(1.12)";
+      });
+    });
+  }
+
+  /* The manifesto: lines turn gold as they cross the middle of the screen. */
+  var lit = $$("[data-lit]");
+  if (lit.length) {
+    if (!motionOK) lit.forEach(function (li) { li.classList.add("is-lit"); });
+    else scrollHooks.push(function () {
+      var mid = window.innerHeight * 0.62;
+      lit.forEach(function (li) { li.classList.toggle("is-lit", li.getBoundingClientRect().top < mid); });
+    });
+  }
+
+  /* ---------- Dialogs: menu, biographies, graphics ----------
+     Native <dialog>.showModal() makes the page behind inert; we add a Tab
+     trap, close on backdrop click, and return focus to the opener. */
+  var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
+  $$("dialog").forEach(function (dialog) {
     dialog.addEventListener("keydown", function (e) {
       if (e.key !== "Tab") return;
       var items = $$(FOCUSABLE, dialog).filter(function (el) { return el.offsetParent !== null; });
@@ -110,65 +158,61 @@
       if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
       else if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); }
     });
-  }
-  function closeOnBackdrop(dialog) {
     dialog.addEventListener("click", function (e) {
       if (e.target !== dialog) return;
       var r = dialog.getBoundingClientRect();
-      var inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
-      if (!inside) dialog.close();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dialog.close();
     });
-  }
-  function openDialog(dialog, trigger) {
+    dialog.addEventListener("close", function () {
+      if (dialog._opener) dialog._opener.focus({ preventScroll: true });
+      dialog._opener = null;
+    });
+  });
+  function openDialog(dialog, opener) {
     if (typeof dialog.showModal !== "function") return false;
-    dialog._trigger = trigger;
+    dialog._opener = opener;
     dialog.showModal();
     return true;
   }
-  $$("dialog").forEach(function (dialog) {
-    trapTab(dialog);
-    closeOnBackdrop(dialog);
-    dialog.addEventListener("close", function () {
-      if (dialog._trigger) dialog._trigger.focus();
-    });
-  });
 
-  // Menu
   var menu = $("#menu");
-  var menuToggle = $(".menu-toggle");
-  if (menu) $$(".menu__list li", menu).forEach(function (li, i) { li.style.setProperty("--i", i); });
-  if (menu && menuToggle) {
-    menuToggle.addEventListener("click", function () {
-      if (openDialog(menu, menuToggle)) {
-        menuToggle.setAttribute("aria-expanded", "true");
-        var firstLink = $(".menu__list a", menu);
-        if (firstLink) firstLink.focus();
+  var menuBtn = $(".menu-toggle");
+  if (menu && menuBtn) {
+    $$(".menu__list li", menu).forEach(function (li, i) { li.style.setProperty("--i", i); });
+    menuBtn.addEventListener("click", function () {
+      if (openDialog(menu, menuBtn)) {
+        menuBtn.setAttribute("aria-expanded", "true");
+        var first = $(".menu__list a", menu);
+        if (first) first.focus();
       }
     });
-    menu.addEventListener("close", function () { menuToggle.setAttribute("aria-expanded", "false"); });
-    $("[data-menu-close]", menu).addEventListener("click", function () { menu.close(); });
-    $$("a", menu).forEach(function (a) {
-      a.addEventListener("click", function () {
-        menu._trigger = null; // let the page move to the chosen section
-        menu.close();
-      });
-    });
-    window.matchMedia("(min-width: 920px)").addEventListener("change", function (e) {
-      if (e.matches && menu.open) menu.close();
-    });
+    menu.addEventListener("close", function () { menuBtn.setAttribute("aria-expanded", "false"); });
+    $$("a", menu).forEach(function (a) { a.addEventListener("click", function () { menu._opener = null; menu.close(); }); });
+    window.matchMedia("(min-width: 1280px)").addEventListener("change", function (e) { if (e.matches && menu.open) menu.close(); });
   }
 
-  // Biographies
+  var viewer = $("#graphic");
+  var viewerImg = viewer && $("[data-graphic-img]", viewer);
   $$("[data-dialog]").forEach(function (btn) {
     var dialog = doc.getElementById(btn.getAttribute("data-dialog"));
     if (!dialog) return;
-    btn.addEventListener("click", function () { openDialog(dialog, btn); });
+    btn.setAttribute("aria-haspopup", "dialog");
+    btn.addEventListener("click", function () {
+      if (dialog === viewer) {
+        viewerImg.src = btn.getAttribute("data-graphic");
+        viewerImg.width = +btn.getAttribute("data-graphic-w");
+        viewerImg.height = +btn.getAttribute("data-graphic-h");
+        viewerImg.alt = btn.getAttribute("data-graphic-alt") || "";
+        viewer.setAttribute("aria-label", viewerImg.alt.split(":")[0] || "Graphic");
+      }
+      if (!openDialog(dialog, btn) && dialog === viewer) window.open(btn.getAttribute("data-graphic"), "_blank", "noopener");
+    });
   });
   $$("[data-dialog-close]").forEach(function (btn) {
     btn.addEventListener("click", function () { btn.closest("dialog").close(); });
   });
 
-  /* ---------- Active section in the main navigation ---------- */
+  /* ---------- Current section in the main navigation ---------- */
   var navLinks = $$(".nav a[href^='#']");
   if (hasIO && navLinks.length) {
     var byId = {};
@@ -184,413 +228,124 @@
     $$("main > section[id]").forEach(function (s) { spy.observe(s); });
   }
 
-  /* ---------- Reveal on scroll, staggered among siblings ---------- */
-  var reveals = $$(".reveal");
-  if (!hasIO || reducedMotion) {
-    reveals.forEach(function (el) { el.classList.add("is-visible"); });
-  } else {
-    reveals.forEach(function (el) {
-      var sibs = $$(":scope > .reveal", el.parentNode);
-      el.style.setProperty("--d", Math.min(sibs.indexOf(el), 4) * 110 + "ms");
-    });
+  /* ---------- Reveal on scroll ----------
+     Only elements that start below the fold are hidden, so nothing above the
+     fold flashes, and nothing is hidden if this script does not run. */
+  if (motionOK && hasIO) {
     var revealer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("is-visible");
-          revealer.unobserve(entry.target);
-        }
-      });
-    }, { rootMargin: "0px 0px -8% 0px" });
-    reveals.forEach(function (el) { revealer.observe(el); });
-  }
-
-  /* ---------- Headings rise word by word ----------
-     The words are drawn in an aria-hidden copy; the heading keeps its whole
-     text in a visually hidden span, so it is still read (and named) as one. */
-  function splitWords(el, withHiddenCopy) {
-    var text = el.textContent.replace(/\s+/g, " ").trim();
-    var words = text.split(" ");
-    el.textContent = "";
-    if (withHiddenCopy) {
-      var copy = doc.createElement("span");
-      copy.className = "visually-hidden";
-      copy.textContent = text;
-      el.appendChild(copy);
-    }
-    var wrap = doc.createElement("span");
-    wrap.className = "split__words";
-    if (withHiddenCopy) wrap.setAttribute("aria-hidden", "true");
-    words.forEach(function (word, i) {
-      var w = doc.createElement("span");
-      w.className = "w";
-      var inner = doc.createElement("span");
-      inner.textContent = word;
-      w.style.setProperty("--i", i);
-      w.appendChild(inner);
-      wrap.appendChild(w);
-      if (i < words.length - 1) wrap.appendChild(doc.createTextNode(" "));
-    });
-    el.appendChild(wrap);
-    el.classList.add("is-split");
-    return $$(".w", wrap);
-  }
-  if (motionOK && hasIO) {
-    var heroTitle = $(".hero__title");
-    if (heroTitle) {
-      splitWords(heroTitle, true);
-      requestAnimationFrame(function () { requestAnimationFrame(function () { heroTitle.classList.add("is-in"); }); });
-    }
-    var headings = $$("main h2").filter(function (h) { return !h.closest("dialog") && !h.children.length; });
-    var headWatch = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
-        entry.target.classList.add("is-in");
-        headWatch.unobserve(entry.target);
+        var el = entry.target;
+        el.classList.remove("pre-reveal", "rule-pending");
+        el.classList.add("is-revealed");
+        revealer.unobserve(el);
       });
     }, { rootMargin: "0px 0px -10% 0px" });
-    headings.forEach(function (h) { splitWords(h, true); headWatch.observe(h); });
-  }
-
-  /* ---------- James 5:16 lights up as it is read ---------- */
-  $$("[data-illuminate]").forEach(function (fig) {
-    if (!motionOK) return;
-    var p = $("blockquote p", fig);
-    if (!p) return;
-    var words = splitWords(p, false);
-    fig.classList.add("is-ready", "is-in"); // words are lit, not raised
-
-    var lit = -1;
-    scrollHooks.push(function () {
-      var r = fig.getBoundingClientRect();
-      var vh = window.innerHeight;
-      if (r.bottom < -vh || r.top > vh * 2) return;
-      var progress = (vh * 0.9 - r.top) / (vh * 0.55);
-      var n = Math.max(0, Math.min(words.length, Math.round(progress * words.length)));
-      if (n === lit) return;
-      lit = n;
-      words.forEach(function (w, i) { w.classList.toggle("is-lit", i < n); });
+    $$(".reveal").forEach(function (el) {
+      if (el.getBoundingClientRect().top < window.innerHeight) return;
+      var sibs = $$(":scope > .reveal", el.parentNode);
+      el.style.setProperty("--d", Math.min(sibs.indexOf(el), 4) * 110 + "ms");
+      el.classList.add("pre-reveal");
+      revealer.observe(el);
     });
-  });
-
-  /* ---------- Cards catch the light; main buttons lean toward the pointer ---------- */
-  if (finePointer) {
-    $$("[data-spot]").forEach(function (card) {
-      card.addEventListener("pointermove", function (e) {
-        var r = card.getBoundingClientRect();
-        card.style.setProperty("--mx", (e.clientX - r.left) + "px");
-        card.style.setProperty("--my", (e.clientY - r.top) + "px");
-      });
-    });
-  }
-  if (finePointer && motionOK) {
-    $$("[data-magnetic]").forEach(function (btn) {
-      btn.addEventListener("pointermove", function (e) {
-        var r = btn.getBoundingClientRect();
-        var dx = (e.clientX - (r.left + r.width / 2)) / r.width;
-        var dy = (e.clientY - (r.top + r.height / 2)) / r.height;
-        btn.style.translate = (dx * 10).toFixed(1) + "px " + (dy * 8).toFixed(1) + "px";
-      });
-      btn.addEventListener("pointerleave", function () { btn.style.translate = ""; });
+    // Meridian rules draw in as their label arrives.
+    $$("main .label .rule").forEach(function (r) {
+      var label = r.parentNode;
+      if (label.getBoundingClientRect().top < window.innerHeight || label.closest(".hero")) return;
+      label.classList.add("rule-pending");
+      revealer.observe(label);
     });
   }
 
-  /* ---------- Begin here: the light follows the pointer ---------- */
-  var begin = $(".begin");
-  var beginLight = $(".begin__light");
-  if (begin && beginLight && motionOK) {
-    begin.addEventListener("pointermove", function (e) {
-      var r = begin.getBoundingClientRect();
-      beginLight.style.setProperty("--lx", (e.clientX - r.left) + "px");
-      beginLight.style.setProperty("--ly", (e.clientY - r.top) + "px");
-    });
-    begin.addEventListener("pointerleave", function () {
-      beginLight.style.removeProperty("--lx");
-      beginLight.style.removeProperty("--ly");
-    });
-  }
-
-  /* ---------- Hero sky: lights rising, like prayers going up ----------
-     A small particle field on a canvas. It runs only while the hero is on
-     screen and the tab is visible; the pointer draws lights toward it and
-     a click or tap sends up a burst. Never drawn under reduced motion. */
-  var hero = $(".hero");
-  var sky = $(".hero__sky");
-  if (hero && sky && sky.getContext && motionOK) {
-    (function () {
-      var ctx = sky.getContext("2d");
-      var dpr = Math.min(window.devicePixelRatio || 1, 2);
-      var W = 0, H = 0, parts = [], sprites = [], running = false, visible = true, raf = 0;
-      var pointer = { x: -9999, y: -9999, active: false };
-      var palette, blend, strength = 1;
-
-      function sprite(rgb) {
-        var c = doc.createElement("canvas");
-        c.width = c.height = 64;
-        var g = c.getContext("2d");
-        var grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-        grad.addColorStop(0, "rgba(" + rgb + ",1)");
-        grad.addColorStop(0.25, "rgba(" + rgb + ",0.55)");
-        grad.addColorStop(1, "rgba(" + rgb + ",0)");
-        g.fillStyle = grad;
-        g.fillRect(0, 0, 64, 64);
-        return c;
-      }
-      function readTheme() {
-        var dark = activeTheme() === "dark";
-        palette = dark ? ["226,184,102", "240,162,127", "255,236,200"] : ["226,184,102", "214,150,70", "176,68,28"];
-        blend = dark ? "lighter" : "source-over";
-        strength = dark ? 1 : 0.6; // on sand, the lights are warmer and quieter
-        sprites = palette.map(sprite); // particles hold an index, so they survive a theme change
-      }
-      function make(x, y, burst) {
-        return {
-          x: x, y: y,
-          r: burst ? 1.5 + Math.random() * 3 : 0.8 + Math.random() * 2.6,
-          vx: burst ? (Math.random() - 0.5) * 1.6 : 0,
-          vy: burst ? -(0.9 + Math.random() * 1.6) : -(0.18 + Math.random() * 0.5),
-          phase: Math.random() * Math.PI * 2,
-          sway: 0.2 + Math.random() * 0.5,
-          life: 0,
-          max: burst ? 140 + Math.random() * 120 : 400 + Math.random() * 500,
-          c: Math.floor(Math.random() * 3)
-        };
-      }
-      function seed() {
-        var target = Math.max(28, Math.min(110, Math.round((W * H) / 9000)));
-        parts = [];
-        for (var i = 0; i < target; i++) {
-          var p = make(Math.random() * W, Math.random() * H, false);
-          p.life = Math.random() * p.max;
-          parts.push(p);
-        }
-        parts.target = target;
-      }
-      function resize() {
-        var r = hero.getBoundingClientRect();
-        W = r.width; H = r.height;
-        sky.width = Math.round(W * dpr); sky.height = Math.round(H * dpr);
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        seed();
-      }
-      function frame(t) {
-        raf = 0;
-        if (!running) return;
-        ctx.clearRect(0, 0, W, H);
-        ctx.globalCompositeOperation = blend;
-        for (var i = parts.length - 1; i >= 0; i--) {
-          var p = parts[i];
-          p.life++;
-          p.vx *= 0.985;
-          var dx = p.x - pointer.x, dy = p.y - pointer.y, d2 = dx * dx + dy * dy;
-          var near = 0;
-          if (pointer.active && d2 < 26000) {
-            near = 1 - d2 / 26000;
-            p.vx -= dx * 0.0009 * near; // drawn gently toward the pointer
-            p.y -= 0.35 * near;
-          }
-          p.x += p.vx + Math.sin(t / 1400 + p.phase) * p.sway * 0.35;
-          p.y += p.vy;
-          var k = p.life / p.max;
-          var a = Math.min(1, k * 6) * (1 - k) * (0.55 + near * 0.45) * strength;
-          if (p.y < -20 || k >= 1) {
-            if (parts.length > parts.target) { parts.splice(i, 1); continue; }
-            parts[i] = make(Math.random() * W, H + 10 + Math.random() * 40, false);
-            continue;
-          }
-          var s = p.r * (6 + near * 4);
-          ctx.globalAlpha = a;
-          ctx.drawImage(sprites[p.c], p.x - s / 2, p.y - s / 2, s, s);
-        }
-        ctx.globalAlpha = 1;
-        raf = requestAnimationFrame(frame);
-      }
-      function sync() {
-        var should = visible && !doc.hidden;
-        if (should && !running) { running = true; if (!raf) raf = requestAnimationFrame(frame); }
-        else if (!should) { running = false; }
-      }
-
-      readTheme();
-      resize();
-      onThemeChange.push(readTheme);
-      if ("ResizeObserver" in window) new ResizeObserver(function () { resize(); }).observe(hero);
-      if (hasIO) new IntersectionObserver(function (e) { visible = e[0].isIntersecting; sync(); }).observe(hero);
-      doc.addEventListener("visibilitychange", sync);
-
-      var trail = 0;
-      hero.addEventListener("pointermove", function (e) {
-        var r = hero.getBoundingClientRect();
-        pointer.x = e.clientX - r.left; pointer.y = e.clientY - r.top; pointer.active = true;
-        if (++trail % 5 === 0 && parts.length < parts.target + 60) {
-          var p = make(pointer.x + (Math.random() - 0.5) * 30, pointer.y + (Math.random() - 0.5) * 30, false);
-          p.max = 160 + Math.random() * 120;
-          parts.push(p);
-        }
-      });
-      hero.addEventListener("pointerleave", function () { pointer.active = false; pointer.x = pointer.y = -9999; });
-      hero.addEventListener("click", function (e) {
-        if (e.target.closest("a, button, input, select, textarea, summary")) return;
-        var r = hero.getBoundingClientRect();
-        var x = e.clientX - r.left, y = e.clientY - r.top;
-        for (var i = 0; i < 26; i++) parts.push(make(x, y, true));
-      });
-      sync();
-    })();
-  }
-
-  /* ---------- Gatherings: countdown and calendar files ----------
-     Times are Port Moresby time (UTC+10, no daylight saving). */
-  var PNG_OFFSET_MS = 10 * 60 * 60 * 1000;
-  var PLACE = "Taurama Aquatic Centre Lounge, Port Moresby, Papua New Guinea";
-  var GATHERINGS = {
-    sunday: { name: "Sunday Celebration", day: 0, h: 9, m: 0, end: [13, 30],
-      desc: "Sunday Celebration at The Father’s House, All Nations Church. Come as you are." },
-    friday: { name: "Breakthrough Prayer Night", day: 5, h: 19, m: 0, end: null,
-      desc: "Breakthrough Prayer Night at The Father’s House, All Nations Church." }
-  };
-
-  function nextStart(g, now) {
-    var png = new Date(now + PNG_OFFSET_MS);
-    var t = new Date(png.getTime());
-    t.setUTCDate(png.getUTCDate() + ((g.day - png.getUTCDay() + 7) % 7));
-    t.setUTCHours(g.h, g.m, 0, 0);
-    if (t <= png) t.setUTCDate(t.getUTCDate() + 7);
-    return t.getTime() - PNG_OFFSET_MS;
-  }
-  function inProgress(g, now) {
-    if (!g.end) return false;
-    var png = new Date(now + PNG_OFFSET_MS);
-    var mins = png.getUTCHours() * 60 + png.getUTCMinutes();
-    return png.getUTCDay() === g.day && mins >= g.h * 60 + g.m && mins < g.end[0] * 60 + g.end[1];
-  }
-  function plural(n, word) { return n + " " + word + (n === 1 ? "" : "s"); }
-  function humanise(ms) {
-    var mins = Math.max(1, Math.ceil(ms / 60000));
-    var d = Math.floor(mins / 1440), h = Math.floor((mins % 1440) / 60), m = mins % 60;
-    if (d) return "in " + plural(d, "day") + (h ? ", " + plural(h, "hour") : "");
-    if (h) return "in " + plural(h, "hour") + (m ? ", " + plural(m, "minute") : "");
-    return "in " + plural(m, "minute");
-  }
-
-  var countdown = $("#countdown");
-  if (countdown) {
-    var nameEl = $("[data-countdown-name]", countdown);
-    var timeEl = $("[data-countdown-time]", countdown);
-    var clock = $("[data-clock]");
-    var cells = clock ? ["d", "h", "m", "s"].map(function (k) { return $("[data-clock-" + k + "]", clock); }) : [];
-    var setText = function (el, text) { if (el.textContent !== text) el.textContent = text; };
-    var setCell = function (el, text) {
-      if (el.textContent === text) return;
-      el.textContent = text;
-      el.classList.remove("tick");
-      void el.offsetWidth; // restart the roll-in
-      el.classList.add("tick");
+  /* ---------- Next gathering (hero strip) ---------- */
+  var next = $("[data-next]");
+  if (next) {
+    var text = $("[data-next-text]", next);
+    var dayFormat = null;
+    try { dayFormat = new Intl.DateTimeFormat("en-GB", { timeZone: HOUSE.timeZone, weekday: "long" }); } catch (e) { dayFormat = null; }
+    var plural = function (n, w) { return n + " " + w + (n === 1 ? "" : "s"); };
+    var humanise = function (ms) {
+      var mins = Math.max(1, Math.ceil(ms / MIN));
+      var d = Math.floor(mins / 1440), h = Math.floor((mins % 1440) / 60), m = mins % 60;
+      if (d) return plural(d, "day") + (h ? ", " + plural(h, "hour") : "");
+      if (h) return plural(h, "hour") + (m ? ", " + plural(m, "minute") : "");
+      return plural(m, "minute");
     };
-    var pad = function (n) { return (n < 10 ? "0" : "") + n; };
     var tick = function () {
       var now = Date.now();
-      if (inProgress(GATHERINGS.sunday, now)) {
-        setText(nameEl, "Sunday Celebration");
-        setText(timeEl, "is under way now");
-        if (clock) clock.hidden = true;
-        return;
+      var on = gatheredNow(now);
+      next.classList.toggle("is-open", !!on);
+      var msg;
+      if (on) msg = on.g.name + " is gathered now, until " + clock(on.g.end);
+      else {
+        var n = soonest(now);
+        var today = dayFormat && dayFormat.format(new Date(n.at)) === dayFormat.format(new Date(now));
+        msg = "Next: " + n.g.name + (today ? ", today at " + clock(n.g.start) : "") + " · in " + humanise(n.at - now);
       }
-      var next = ["sunday", "friday"].map(function (k) {
-        return { g: GATHERINGS[k], at: nextStart(GATHERINGS[k], now) };
-      }).sort(function (a, b) { return a.at - b.at; })[0];
-      setText(nameEl, next.g.name);
-      setText(timeEl, humanise(next.at - now));
-      if (clock) {
-        var secs = Math.max(0, Math.floor((next.at - now) / 1000));
-        setCell(cells[0], String(Math.floor(secs / 86400)));
-        setCell(cells[1], pad(Math.floor((secs % 86400) / 3600)));
-        setCell(cells[2], pad(Math.floor((secs % 3600) / 60)));
-        setCell(cells[3], pad(secs % 60));
-        clock.hidden = false;
-      }
+      if (text.textContent !== msg) text.textContent = msg;
+      next.hidden = false;
     };
     tick();
-    countdown.hidden = false;
-    setInterval(tick, clock ? 1000 : 30000);
+    setInterval(tick, 30000);
   }
 
+  /* ---------- Calendar files (.ics) ---------- */
   function icsDate(ms) { return new Date(ms).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, ""); }
   function icsText(s) { return s.replace(/\\/g, "\\\\").replace(/[,;]/g, "\\$&"); }
   function icsFor(key) {
-    var g = GATHERINGS[key];
+    var g = HOUSE.gatherings[key];
     var start = nextStart(g, Date.now());
     var lines = [
       "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//The Father's House All Nations Church//Website//EN",
       "CALSCALE:GREGORIAN", "METHOD:PUBLISH", "BEGIN:VEVENT",
-      "UID:" + key + "-weekly@tfhanc.org", "DTSTAMP:" + icsDate(Date.now()), "DTSTART:" + icsDate(start)
-    ];
-    if (g.end) lines.push("DTEND:" + icsDate(start + ((g.end[0] * 60 + g.end[1]) - (g.h * 60 + g.m)) * 60000));
-    lines.push(
+      "UID:" + key + "-weekly@tfhanc.org", "DTSTAMP:" + icsDate(Date.now()),
+      "DTSTART:" + icsDate(start), "DTEND:" + icsDate(start + lengthOf(g)),
       "RRULE:FREQ=WEEKLY",
       "SUMMARY:" + icsText(g.name + " · The Father’s House, All Nations Church"),
-      "LOCATION:" + icsText(PLACE),
-      "DESCRIPTION:" + icsText(g.desc),
-      "URL:https://n30dyn4m1c.github.io/tfhanc/",
+      "LOCATION:" + icsText(g.place),
+      "URL:" + HOUSE.siteUrl,
       "END:VEVENT", "END:VCALENDAR"
-    );
+    ];
     return "data:text/calendar;charset=utf-8," + encodeURIComponent(lines.join("\r\n"));
   }
   $$("[data-ics]").forEach(function (a) {
     var key = a.getAttribute("data-ics");
-    if (!GATHERINGS[key]) return;
+    if (!HOUSE.gatherings[key]) return;
     a.href = icsFor(key);
-    a.setAttribute("download", "tfh-anc-" + GATHERINGS[key].name.toLowerCase().replace(/\s+/g, "-") + ".ics");
+    a.setAttribute("download", "tfh-anc-" + key + ".ics");
     a.hidden = false;
   });
 
-  /* ---------- Featured message: load YouTube only on click ---------- */
-  $$(".video[data-video-id]").forEach(function (fig) {
-    var id = (fig.getAttribute("data-video-id") || "").trim();
-    var poster = $(".video__poster", fig);
-    if (!id || !/^[\w-]{6,20}$/.test(id) || !poster) return; // no ID: poster links to the channel
-    var title = fig.getAttribute("data-video-title") || "Latest message";
-    poster.setAttribute("href", "https://www.youtube.com/watch?v=" + id);
-    poster.setAttribute("role", "button");
-    poster.removeAttribute("target");
-    $(".visually-hidden", poster).textContent = "Play: " + title;
-    poster.addEventListener("click", function (e) {
-      e.preventDefault();
-      var frame = doc.createElement("div");
-      frame.className = "video__frame";
-      var iframe = doc.createElement("iframe");
-      iframe.src = "https://www.youtube-nocookie.com/embed/" + id + "?autoplay=1&rel=0";
-      iframe.title = title;
-      iframe.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
-      iframe.allowFullscreen = true;
-      frame.appendChild(iframe);
-      poster.replaceWith(frame);
-      iframe.focus();
+  /* ---------- Plan your visit: which venue the map shows ---------- */
+  var venues = $("[data-venues]");
+  if (venues) {
+    var mapFrame = $("[data-venue-map]", venues);
+    var mapLink = $("[data-venue-link]", venues);
+    var showVenue = function (key) {
+      var g = HOUSE.gatherings[key];
+      $$("[data-venue]", venues).forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-venue") === key)); });
+      $$("[data-venue-card]", venues).forEach(function (c) { c.classList.toggle("is-current", c.getAttribute("data-venue-card") === key); });
+      var q = encodeURIComponent(g.map);
+      var src = "https://maps.google.com/maps?q=" + q + "&z=15&output=embed";
+      if (mapFrame.getAttribute("src") !== src) mapFrame.setAttribute("src", src);
+      mapFrame.title = "Map: " + g.map;
+      mapLink.href = "https://maps.google.com/?q=" + q;
+    };
+    $$("[data-venue]", venues).forEach(function (b) {
+      b.addEventListener("click", function () { showVenue(b.getAttribute("data-venue")); });
     });
-    poster.addEventListener("keydown", function (e) {
-      if (e.key === " ") { e.preventDefault(); poster.click(); }
-    });
-  });
+    $(".venue-switch", venues).hidden = false;
+    showVenue(likelyGathering(Date.now()));
+  }
 
-  /* ---------- Contact: topic presets from links across the page ---------- */
-  var topic = $("#f-topic");
-  $$("[data-topic]").forEach(function (a) {
-    a.addEventListener("click", function () {
-      if (!topic) return;
-      var want = a.getAttribute("data-topic");
-      var match = $$("option", topic).some(function (o) { return o.value === want; });
-      if (match) topic.value = want;
-    });
-  });
-
-  /* ---------- Copy address ---------- */
-  function copyText(text) {
-    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+  /* ---------- Copy to clipboard ---------- */
+  function copyText(value) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(value);
     return new Promise(function (resolve, reject) {
       var ta = doc.createElement("textarea");
-      ta.value = text;
+      ta.value = value;
       ta.setAttribute("readonly", "");
-      ta.style.position = "fixed";
-      ta.style.opacity = "0";
+      ta.style.cssText = "position:fixed;opacity:0";
       doc.body.appendChild(ta);
       ta.select();
       var ok = false;
@@ -601,150 +356,243 @@
   }
   function wireCopy(btn) {
     var label = $("[data-copy-label]", btn);
+    var original = label ? label.textContent : "";
+    var what = btn.getAttribute("data-copy-what") || "Text";
     btn.addEventListener("click", function () {
-      var text = btn.getAttribute("data-copy");
-      copyText(text).then(function () {
+      var value = btn.getAttribute("data-copy");
+      copyText(value).then(function () {
         if (label) label.textContent = "Copied";
-        announce("Email address copied: " + text);
-        setTimeout(function () { if (label) label.textContent = "Copy address"; }, 2500);
-      }, function () {
-        announce("Copying is not available here. The address is " + text);
-      });
+        announce(what + " copied: " + value);
+        setTimeout(function () { if (label) label.textContent = original; }, 2500);
+      }, function () { announce("Copying is not available here. " + what + ": " + value); });
     });
   }
   $$("[data-copy]").forEach(wireCopy);
 
-  /* ---------- Contact form ----------
-     With data-endpoint set (e.g. a Formspree URL) the form posts there.
-     Otherwise, or if the post fails, it opens the visitor's email app. */
-  var form = $("#connect-form");
-  if (form) {
-    var status = $("#form-status");
-    var submit = $("button[type=submit]", form);
+  /* ---------- Featured message: YouTube loads only on play ---------- */
+  $$("[data-video-id]").forEach(function (fig) {
+    var id = (fig.getAttribute("data-video-id") || "").trim();
+    var poster = $(".feature__poster", fig);
+    if (!poster || !/^[\w-]{6,20}$/.test(id)) return; // no ID yet: the poster opens the channel
+    var title = fig.getAttribute("data-video-title") || "Latest message";
+    poster.href = "https://www.youtube.com/watch?v=" + id;
+    poster.removeAttribute("target");
+    poster.setAttribute("role", "button");
+    $("[data-video-label]", poster).textContent = "Play: " + title;
+    poster.addEventListener("click", function (e) {
+      e.preventDefault();
+      var frame = doc.createElement("div");
+      frame.className = "feature__frame";
+      var iframe = doc.createElement("iframe");
+      iframe.src = "https://www.youtube-nocookie.com/embed/" + id + "?autoplay=1&rel=0";
+      iframe.title = title;
+      iframe.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+      iframe.allowFullscreen = true;
+      frame.appendChild(iframe);
+      poster.replaceWith(frame);
+      iframe.focus();
+    });
+    poster.addEventListener("keydown", function (e) { if (e.key === " ") { e.preventDefault(); poster.click(); } });
+  });
+
+  /* ---------- Prophetic word: filter by category ---------- */
+  var archive = $("[data-archive]");
+  if (archive) {
+    var words = $$(".word", archive);
+    var empty = $("[data-words-empty]", archive);
+    var filter = function (stream) {
+      $$(".streams button", archive).forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-stream") === stream)); });
+      $$("[data-stream-about]", archive).forEach(function (p) { p.hidden = p.getAttribute("data-stream-about") !== stream; });
+      var shown = 0;
+      words.forEach(function (w) {
+        var match = stream === "all" || w.getAttribute("data-stream") === stream;
+        w.hidden = !match;
+        if (match) shown++;
+      });
+      empty.hidden = shown > 0;
+    };
+    $$(".streams button", archive).forEach(function (b) {
+      b.addEventListener("click", function () { filter(b.getAttribute("data-stream")); });
+    });
+  }
+
+  /* ---------- Forms (#connect-form, and the short #begin-form) ---------- */
+  var connect = $("#connect-form");
+  var MESSAGE_LABELS = {
+    prayer: "Your prayer request",
+    coming: "Anything the house should know?",
+    prayed: "Tell the house a little about yourself",
+    serve: "Where would you like to serve?",
+    giving: "Your question about giving",
+    updates: "Anything else?",
+    word: "The word, with when and where it was given",
+    other: "Your message"
+  };
+  var SUBMIT_LABELS = { prayer: "Ask the house to pray", coming: "Tell the house I’m coming" };
+  var SENT_LINES = {
+    coming: function (d) { return "You will be welcomed at " + d.gathering + ". Come as you are."; },
+    prayer: function () { return "This house will carry your request before the Father in prayer."; },
+    prayed: function () { return "Welcome to the family of God. The house will pray with you and help you take your first steps in the secret place."; }
+  };
+
+  function syncReason() {
+    if (!connect) return;
+    var r = $('input[name="reason"]:checked', connect);
+    var reason = r ? r.value : "other";
+    $("[data-message-label]", connect).textContent = MESSAGE_LABELS[reason] || MESSAGE_LABELS.other;
+    $("[data-submit]", connect).textContent = SUBMIT_LABELS[reason] || "Send to the house";
+    $("[data-when='coming']", connect).hidden = reason !== "coming";
+  }
+
+  // Any link with data-reason prefills the main form ("Pray for me", "I'm coming" …).
+  $$("[data-reason]").forEach(function (a) {
+    a.addEventListener("click", function () {
+      if (!connect) return;
+      if (connect.classList.contains("is-sent")) resetForm(connect);
+      var radio = $('input[name="reason"][value="' + a.getAttribute("data-reason") + '"]', connect);
+      if (radio) radio.checked = true;
+      var g = a.getAttribute("data-gathering") || likelyGathering(Date.now());
+      $("#f-gathering").value = HOUSE.gatherings[g].name;
+      syncReason();
+      setTimeout(function () { var n = $("#f-name"); if (n) n.focus({ preventScroll: true }); }, motionOK ? 800 : 50);
+    });
+  });
+  if (connect) {
+    $$('input[name="reason"]', connect).forEach(function (r) { r.addEventListener("change", syncReason); });
+    $("#f-gathering").value = HOUSE.gatherings[likelyGathering(Date.now())].name;
+    syncReason();
+  }
+
+  function resetForm(form) {
+    form.classList.remove("is-sent");
+    var status = $(".form__status", form);
+    status.hidden = true;
+    status.textContent = "";
+  }
+
+  $$("form[data-connect]").forEach(function (form) {
+    var status = $(".form__status", form);
+    var submit = $("[data-submit]", form);
     var email = form.getAttribute("data-email") || "info@tfhanc.org";
     var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     var checks = {
       name: function (v) { return v.trim().length > 0; },
       email: function (v) { return EMAIL_RE.test(v.trim()); }
     };
-    var attempted = false;
-
-    var validateField = function (input) {
+    var tried = false;
+    var validate = function (input) {
       var ok = checks[input.name](input.value);
-      var err = doc.getElementById(input.id + "-error");
       input.setAttribute("aria-invalid", ok ? "false" : "true");
-      if (err) err.hidden = ok;
+      doc.getElementById(input.id + "-error").hidden = ok;
       return ok;
     };
-    Object.keys(checks).forEach(function (name) {
-      var input = form.elements[name];
-      input.addEventListener("blur", function () { if (attempted || input.value) validateField(input); });
-      input.addEventListener("input", function () { if (input.getAttribute("aria-invalid") === "true") validateField(input); });
+    Object.keys(checks).forEach(function (n) {
+      var input = form.elements[n];
+      input.addEventListener("blur", function () { if (tried || input.value) validate(input); });
+      input.addEventListener("input", function () { if (input.getAttribute("aria-invalid") === "true") validate(input); });
     });
 
-    var showStatus = function (kind) {
+    var para = function (txt, strong) {
+      var p = doc.createElement("p");
+      if (strong) { var s = doc.createElement("strong"); s.textContent = txt; p.appendChild(s); } else p.textContent = txt;
+      return p;
+    };
+    var showSent = function (d) {
       status.textContent = "";
-      var p1 = doc.createElement("p");
-      var strong = doc.createElement("strong");
+      var again = doc.createElement("button");
+      again.type = "button";
+      again.className = "link";
+      again.textContent = "Send another message";
+      again.addEventListener("click", function () { resetForm(form); form.reset(); syncReason(); form.elements.name.focus(); });
+      status.append(para("Received. Your message has reached the house.", true), para(SENT_LINES[d.reason] ? SENT_LINES[d.reason](d) : "The house will reply by email."), again);
+      status.hidden = false;
+      form.classList.add("is-sent");
+      status.focus({ preventScroll: true });
+      status.scrollIntoView({ block: "center", behavior: motionOK ? "smooth" : "auto" });
+    };
+    var showMail = function () {
+      status.textContent = "";
       var p2 = doc.createElement("p");
-      if (kind === "sent") {
-        strong.textContent = "Thank you. Your message has reached the house.";
-        p1.appendChild(strong);
-        p2.textContent = "The house will pray with you and reply by email.";
-        status.append(p1, p2);
-      } else {
-        strong.textContent = "Your email app should now open with your message ready to send.";
-        p1.appendChild(strong);
-        p2.append("If your email app did not open, write to ");
-        var a = doc.createElement("a");
-        a.href = "mailto:" + email;
-        a.textContent = email;
-        p2.append(a, ".");
-        var btn = doc.createElement("button");
-        btn.type = "button";
-        btn.className = "copy-btn";
-        btn.setAttribute("data-copy", email);
-        btn.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg><span data-copy-label>Copy address</span>';
-        wireCopy(btn);
-        status.append(p1, p2, btn);
-      }
+      p2.append("If it did not open, write to ");
+      var a = doc.createElement("a");
+      a.href = "mailto:" + email;
+      a.textContent = email;
+      p2.append(a, ".");
+      var btn = doc.createElement("button");
+      btn.type = "button";
+      btn.className = "chip";
+      btn.setAttribute("data-copy", email);
+      btn.setAttribute("data-copy-what", "Email address");
+      btn.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg><span data-copy-label>Copy address</span>';
+      wireCopy(btn);
+      status.append(para("Your email app should now open with your message ready to send.", true), p2, btn);
       status.hidden = false;
     };
-
-    var openMail = function (data) {
-      var subject = data.topic + " · " + data.name;
-      var body = "Name: " + data.name + "\nEmail: " + data.email + "\nSubject: " + data.topic + "\n\n" + data.message;
-      window.location.href = "mailto:" + email + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+    var openMail = function (d) {
+      var body = "Name: " + d.name + "\nEmail: " + d.email + "\nAbout: " + d.subject +
+        (d.reason === "coming" ? "\nGathering: " + d.gathering : "") + "\n\n" + d.message;
+      window.location.href = "mailto:" + email + "?subject=" + encodeURIComponent(d.subject + " · " + d.name) + "&body=" + encodeURIComponent(body);
     };
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
-      attempted = true;
-      var invalid = Object.keys(checks).map(function (n) { return form.elements[n]; })
-        .filter(function (input) { return !validateField(input); });
+      tried = true;
+      var invalid = Object.keys(checks).map(function (n) { return form.elements[n]; }).filter(function (i) { return !validate(i); });
       if (invalid.length) { invalid[0].focus(); return; }
 
+      var reasonInput = $('input[name="reason"]:checked', form);
       var data = {
-        topic: form.elements.topic.value,
+        reason: reasonInput ? reasonInput.value : form.getAttribute("data-fixed-reason"),
+        subject: reasonInput ? reasonInput.getAttribute("data-subject") : form.getAttribute("data-subject"),
+        gathering: form.elements.gathering ? form.elements.gathering.value : "",
         name: form.elements.name.value.trim(),
         email: form.elements.email.value.trim(),
         message: form.elements.message.value.trim()
       };
-      var endpoint = (form.getAttribute("data-endpoint") || "").trim();
-      if (!endpoint || !window.fetch) { openMail(data); showStatus("mail"); return; }
+      if (form.elements._gotcha.value) { showSent(data); return; } // a bot filled the trap: send nothing
 
+      var endpoint = (form.getAttribute("data-endpoint") || "").trim();
+      if (!endpoint || !window.fetch) { openMail(data); showMail(); return; }
+
+      var body = new FormData();
+      body.append("about", data.subject);
+      if (data.reason === "coming") body.append("gathering", data.gathering);
+      body.append("name", data.name);
+      body.append("email", data.email);
+      body.append("message", data.message);
+      body.append("_subject", data.subject + " · " + data.name);
+      body.append("_replyto", data.email);
+
+      var label = submit.textContent;
       submit.disabled = true;
       submit.textContent = "Sending…";
-      fetch(endpoint, { method: "POST", body: new FormData(form), headers: { Accept: "application/json" } })
+      fetch(endpoint, { method: "POST", body: body, headers: { Accept: "application/json" } })
         .then(function (r) {
-          if (!r.ok) throw new Error(r.status);
+          if (!r.ok) throw new Error(String(r.status));
           form.reset();
-          showStatus("sent");
+          syncReason();
+          showSent(data);
         })
-        .catch(function () { openMail(data); showStatus("mail"); })
-        .then(function () { submit.disabled = false; submit.textContent = "Send to the house"; });
+        .catch(function () { openMail(data); showMail(); })
+        .then(function () { submit.disabled = false; if (submit.textContent === "Sending…") submit.textContent = label; });
     });
-  }
+  });
 
-  /* ---------- Floating "Send a prayer request" ----------
-     Shown once the hero's own buttons have scrolled away; hidden while the
-     contact section or footer is on screen. */
-  var fab = $("[data-fab]");
-  if (fab && hasIO) {
-    var state = { hero: true, connect: false, footer: false };
-    var update = function () { fab.classList.toggle("is-shown", !state.hero && !state.connect && !state.footer); };
-    var watch = function (el, key) {
+  /* ---------- Floating actions (phones) ---------- */
+  var dock = $("[data-dock]");
+  if (dock && hasIO) {
+    var seen = { hero: true, connect: false, footer: false, begin: false };
+    var update = function () { dock.classList.toggle("is-shown", !seen.hero && !seen.connect && !seen.footer && !seen.begin); };
+    [[".hero", "hero"], ["#connect", "connect"], [".footer", "footer"], ["#begin-form", "begin"]].forEach(function (pair) {
+      var el = $(pair[0]);
       if (!el) return;
-      new IntersectionObserver(function (entries) {
-        state[key] = entries[0].isIntersecting;
-        update();
-      }).observe(el);
-    };
-    watch($(".hero__actions"), "hero");
-    watch($("#connect"), "connect");
-    watch($(".footer"), "footer");
-  }
-
-  /* ---------- Disclosures that start open on wider screens ---------- */
-  if (window.matchMedia("(min-width: 760px)").matches) {
-    $$("details[data-open-wide]").forEach(function (d) { d.open = true; });
-  }
-
-  /* ---------- Rails: keyboard-scrollable only when they overflow ---------- */
-  var rails = $$(".rail");
-  var syncRails = function () {
-    rails.forEach(function (r) {
-      if (r.scrollWidth > r.clientWidth + 1) r.setAttribute("tabindex", "0");
-      else r.removeAttribute("tabindex");
+      new IntersectionObserver(function (entries) { seen[pair[1]] = entries[0].isIntersecting; update(); }).observe(el);
     });
-  };
-  syncRails();
-  var railTimer;
-  window.addEventListener("resize", function () { clearTimeout(railTimer); railTimer = setTimeout(syncRails, 150); });
-
-  runScrollHooks();
+  }
 
   /* ---------- Footer year ---------- */
   var year = $("#year");
   if (year) year.textContent = String(new Date().getFullYear());
+
+  runScroll();
 })();

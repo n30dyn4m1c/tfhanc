@@ -1,111 +1,66 @@
 #!/usr/bin/env node
-/* WCAG 2.2 contrast check for the design tokens in assets/css/style.css.
+/* WCAG 2.2 contrast check for the colour tokens in assets/css/style.css.
    No dependencies:  node tools/contrast.js
-   Reads the light tokens (:root), the dark theme (:root[data-theme="dark"]),
-   and the .night scope, resolves var() references, and checks every
-   text/background pair the components use, in all four contexts.
-   Exits non-zero if any pair fails. */
+   Reads the palette (:root) and the ivory scope (.light), and checks every
+   text/background pair the components use. Exits non-zero if any pair fails. */
 "use strict";
 const fs = require("fs");
 const path = require("path");
 const css = fs.readFileSync(path.join(__dirname, "..", "assets", "css", "style.css"), "utf8");
 
 function block(selector) {
-  const i = css.indexOf(selector + " {");
+  const i = css.indexOf("\n" + selector + " {");
   if (i < 0) throw new Error("Missing block " + selector);
   const body = css.slice(css.indexOf("{", i) + 1, css.indexOf("}", i));
   const out = {};
   body.replace(/--([\w-]+):\s*([^;]+);/g, (_, k, v) => { out[k] = v.trim(); });
   return out;
 }
-const light = block(":root");
-const dark = Object.assign({}, light, block(':root[data-theme="dark"]'));
-const nightMap = block(".night");
-// The dark theme is written twice (system preference and manual toggle); they must match.
-const darkAuto = block(':root:not([data-theme="light"])');
-const darkManual = block(':root[data-theme="dark"]');
-if (JSON.stringify(darkAuto) !== JSON.stringify(darkManual)) {
-  console.error("The two dark-theme blocks in style.css differ. Keep them identical.");
-  process.exit(1);
-}
+const root = block(":root");
+const light = Object.assign({}, root, block(".light"));
 
-// Resolve a token to a literal colour, following var() references.
-function resolve(tokens, value) {
-  const m = /^var\(--([\w-]+)\)$/.exec(value);
-  if (!m) return value;
-  if (!(m[1] in tokens)) throw new Error("Unknown token --" + m[1]);
-  return resolve(tokens, tokens[m[1]]);
+function hex(tokens, v, n = 0) {
+  const m = /^var\(--([\w-]+)\)$/.exec(v);
+  if (m) { if (n > 10 || !(m[1] in tokens)) throw new Error("Unknown token --" + m[1]); return hex(tokens, tokens[m[1]], n + 1); }
+  if (v in tokens) return hex(tokens, tokens[v], n + 1);
+  if (/^#[0-9a-f]{6}$/i.test(v)) return v;
+  throw new Error("Not a solid colour: " + v);
 }
-// A context's lookup: base theme tokens, optionally with the .night swap.
-function scope(base, isNight) {
-  return (name) => {
-    const v = isNight && name in nightMap ? nightMap[name] : base[name];
-    if (v === undefined) throw new Error("Unknown token --" + name);
-    return resolve(base, v);
-  };
-}
-
-function hex(c) {
-  const m = /^#([0-9a-f]{6})$/i.exec(c);
-  if (!m) return null;
-  return [0, 2, 4].map((i) => parseInt(m[1].substr(i, 2), 16));
-}
-function lum(rgb) {
-  const [r, g, b] = rgb.map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+function rgb(c) { return [1, 3, 5].map((i) => parseInt(c.substr(i, 2), 16)); }
+function lum(c) {
+  const [r, g, b] = rgb(c).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
-function ratio(a, b) {
-  const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
-  return (x + 0.05) / (y + 0.05);
-}
+function ratio(a, b) { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); }
 
-// [foreground, background, minimum, what it is]
 const TEXT = 4.5, UI = 3;
-const pairs = [
-  ["fg", "bg", TEXT, "body text"],
-  ["fg", "bg-tint", TEXT, "body text on tinted section"],
-  ["fg", "surface", TEXT, "text on cards"],
-  ["fg-soft", "bg", TEXT, "secondary text"],
-  ["fg-soft", "bg-tint", TEXT, "secondary text on tint"],
-  ["fg-soft", "surface", TEXT, "secondary text on cards"],
-  ["accent", "bg", TEXT, "labels, links"],
-  ["accent", "bg-tint", TEXT, "labels, links on tint"],
-  ["accent", "surface", TEXT, "links on cards"],
-  ["error", "bg", TEXT, "form errors"],
-  ["error", "surface", TEXT, "form errors on form card"],
-  ["btn-fg", "btn-bg", TEXT, "primary button"],
-  ["btn-fg", "btn-bg-hover", TEXT, "primary button, hover"],
-  ["focus", "bg", UI, "focus ring"],
-  ["focus", "bg-tint", UI, "focus ring on tint"],
-  ["focus", "surface", UI, "focus ring on cards"],
-  ["line-strong", "bg", UI, "input borders"],
-  ["line-strong", "surface", UI, "input borders on form card"],
-  ["btn-bg", "bg", UI, "primary button edge"]
-];
-const nightPairs = pairs.filter(([f, b]) => b !== "bg-tint" && !f.startsWith("btn") && b !== "btn-bg");
-nightPairs.push(["btn-fg", "btn-bg", TEXT, "primary button"], ["btn-bg", "bg", UI, "primary button edge"]);
-
-const contexts = [
-  ["Light", scope(light, false), pairs],
-  ["Dark", scope(dark, false), pairs],
-  ["Night (light theme)", scope(light, true), nightPairs],
-  ["Night (dark theme)", scope(dark, true), nightPairs]
-];
+// Dark grounds the page actually uses: plum, royal, the Friday/visit plum, and ink.
+const DARK_GROUNDS = ["plum", "royal", "#1b0529", "ink"];
+const pairs = [];
+for (const g of DARK_GROUNDS) {
+  pairs.push([root, "fg", g, TEXT, "body text"], [root, "soft", g, TEXT, "secondary text"],
+             [root, "champagne", g, TEXT, "labels, gold text"], [root, "lavender", g, TEXT, "lavender text"],
+             [root, "gold", g, UI, "gold rules, icons, button edges"]);
+}
+pairs.push(
+  [root, "ink", "gold", TEXT, "text on gold button (darkest stop)"],
+  [root, "ink", "champagne", TEXT, "text on gold button (lightest stop)"],
+  [root, "ink", "#b08a1a", TEXT, "text on gold button (shadow stop)"],
+  [root, "ivory", "purple", TEXT, "text on purple button"],
+  [light, "fg", "ivory", TEXT, "ivory: body text"],
+  [light, "soft", "ivory", TEXT, "ivory: secondary text"],
+  [light, "soft", "#ffffff", TEXT, "ivory: card text"],
+  [light, "purple", "ivory", TEXT, "ivory: headings, labels"],
+  [light, "purple", "#ffffff", TEXT, "ivory: card headings"],
+  [light, "gold", "#ffffff", 1, "ivory: gold is decoration only (no requirement)"]
+);
 
 let fails = 0;
-const rows = [];
-for (const [ctx, get, list] of contexts) {
-  for (const [f, b, min, what] of list) {
-    const fc = get(f), bc = get(b);
-    const r = ratio(hex(fc), hex(bc));
-    const ok = r >= min;
-    if (!ok) fails++;
-    rows.push(`| ${ctx} | ${what} | \`--${f}\` ${fc} | \`--${b}\` ${bc} | ${r.toFixed(2)}:1 | ${min}:1 | ${ok ? "pass" : "FAIL"} |`);
-  }
+for (const [tokens, f, b, min, what] of pairs) {
+  const r = ratio(hex(tokens, f), hex(tokens, b));
+  const ok = r >= min;
+  if (!ok) fails++;
+  console.log(`${ok ? "pass" : "FAIL"}  ${r.toFixed(2).padStart(5)}:1  (min ${min})  ${f} on ${b}  ${what}`);
 }
-console.log("| Context | Use | Foreground | Background | Ratio | Needs | Result |");
-console.log("|---|---|---|---|---|---|---|");
-console.log(rows.join("\n"));
-console.log(`\n${rows.length} pairs checked, ${fails} failing.`);
-console.log(`For reference, the previous design: #837796 on #171028 = ${ratio(hex("#837796"), hex("#171028")).toFixed(2)}:1; #8a691c on #f1eadb = ${ratio(hex("#8a691c"), hex("#f1eadb")).toFixed(2)}:1.`);
+console.log(`\n${pairs.length} pairs checked, ${fails} failing.`);
 process.exit(fails ? 1 : 0);
