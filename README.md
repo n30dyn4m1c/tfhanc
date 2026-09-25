@@ -11,6 +11,8 @@ This is a static site: plain HTML, CSS and JavaScript, with no framework, no bui
 
 **Live site:** <https://n30dyn4m1c.github.io/tfhanc/>
 
+> **Status (25 September 2026):** the royal purple redesign described here lives on the `redesign/royal-purple` branch. The live site still serves `main`, which holds the previous design, until launch. The steps, owners and dates to launch are in [`docs/LAUNCH_PLAN.md`](docs/LAUNCH_PLAN.md).
+
 ## The design: "Heaven's authority touching earth"
 
 The site is the logo expanded into a world. The logo shows a royal purple eagle whose wing sweeps around a globe, with a family standing on it, in gold. The page follows the same vertical axis, from Heaven (deep purple sky) through gold light breaking through to the earth (the ridges of Papua New Guinea).
@@ -44,6 +46,9 @@ assets/img/words/          the house's own graphics, shown full size from the Pr
 assets/img/og.jpg          1200 × 630 share image, rendered from tools/og.html
 docs/DESIGN_SYSTEM.md      the design system
 docs/PHOTO_BRIEFS.md       which images are generated, and how to replace them with photographs
+docs/LAUNCH_PLAN.md        the work plan to launch: content needed, testing, switch-over
+docs/REDESIGN_PROMPT.md    review of the previous design and the brief that led to this one (historical)
+AUDIT.md                   product, UX and accessibility audit of the previous design (historical)
 tools/build-images.py      builds assets/img/scenes/ from master images (Pillow)
 tools/contrast.js          WCAG contrast check for every colour pair: node tools/contrast.js
 tools/og.html              source for og.jpg (render: node tools/render-og.js)
@@ -58,7 +63,7 @@ STYLE_GUIDE.md             voice and Scripture citation rules
 4. **Friday Night Prayer** (`#friday`): 7:00–10:00 PM at Taurama Aquatic Centre Lounge, the theme *Breaking into the Spirit of Prayer* in five movements, Acts 12:5, transport after prayer
 5. **The Nations** (`#nations`): Papua New Guinea, the Pacific, the nations
 6. **Prophetic Word** (`#prophetic-word`): Prophecies, PNG prophetic words, Global words, and Archive; each word links to its original graphic
-7. **Leadership:** Pastor Ben Minok and Dr Jonathan David, with biographies in dialogs
+7. **Leadership** (`#leadership`): Pastor Ben Minok and Dr Jonathan David, with biographies in dialogs; *The network* (`#network`), the network churches and their pastors by province (Morobe, East New Britain, West New Britain); and *Those who serve*
 8. **Messages:** the featured message (YouTube loads only on play) and three channels
 9. **Conferences:** three gatherings, dates to be announced
 10. **Begin here** (`#begin`): Believe, Confess, Tell the house; the prayer; Romans 10:9; a short form
@@ -92,7 +97,8 @@ grep -n "CONTENT NEEDED\|PHOTO SLOT" index.html
 | Item | Where | What to do |
 |---|---|---|
 | Real photographs | `assets/img/scenes/`, portraits | Follow `docs/PHOTO_BRIEFS.md`. Replace the generated worship crowd first. |
-| PNG prophetic words | Prophetic Word | Add `data-stream="png"` entries |
+| PNG prophetic words | Prophetic Word | The PNG filter is empty. Add `data-stream="png"` entries, or remove the filter button |
+| Form service | Both forms, `data-endpoint` | See "Connecting the forms" above |
 | Featured message | Messages, `data-video-id` | Paste the YouTube ID, and set the title and caption |
 | Bank details | Giving, `.slip__rows` | Fill each `<dd>`, and remove `slip__blank` |
 | Conference dates | Conferences, `.conf__date` | Replace with `<time datetime="YYYY-MM-DD">…</time>` |
@@ -111,6 +117,8 @@ Copy follows `STYLE_GUIDE.md`. Scripture is quoted exactly, with reference and t
 ## Hosting on GitHub Pages
 
 In **Settings → Pages**, set **Source** to *Deploy from a branch*, choose `main` and `/ (root)`, and save. All paths are relative, so the site works under `/tfhanc/`.
+
+Work happens on a branch and reaches the live site by pull request into `main`. To move to a custom domain such as `tfhanc.org`, add a `CNAME` file, set the domain and HTTPS in **Settings → Pages**, and replace `https://n30dyn4m1c.github.io/tfhanc/` in the canonical link, Open Graph and Twitter tags, and JSON-LD at the top of `index.html`. The launch plan covers the order.
 
 ## License
 

@@ -1,5 +1,7 @@
 # Product, UX, UI & Accessibility Audit
 
+> **Historical.** This audit covers the previous "charter" design (commit `1ed6056`, August 2026). The site has since been redesigned (see `docs/DESIGN_SYSTEM.md`), so many findings no longer apply. Open work to launch is tracked in `docs/LAUNCH_PLAN.md`.
+
 **Repository:** `n30dyn4m1c/tfhanc` · **Surface audited:** `index.html`, `assets/css/style.css`, `assets/js/main.js`, `assets/img/*`, `README.md`, `STYLE_GUIDE.md`
 **Live site:** https://n30dyn4m1c.github.io/tfhanc/
 **Date:** 27 August 2026 · **Commit audited:** `1ed6056`
