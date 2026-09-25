@@ -15,6 +15,9 @@ places that could be mistaken for the house:
   Replace it first.
 - `friday-*` shows a generated coastline, not a specific Port Moresby location.
 
+If no real worship photograph has arrived by launch, swap `worship` for a scene
+without people (see "If content is late" in `docs/LAUNCH_PLAN.md`).
+
 The leaders' portraits are deliberately **not** generated. They show an engraved
 monogram until real, consented photographs are supplied.
 

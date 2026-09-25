@@ -1,5 +1,7 @@
 # Site Design Review & Redesign Prompt
 
+> **Historical.** This review and prompt led to the royal purple redesign. The current system is in `docs/DESIGN_SYSTEM.md`, and the work to launch is in `docs/LAUNCH_PLAN.md`.
+
 Review of the current site (`index.html`, `assets/css/style.css`, `assets/js/main.js`)
 as of September 2026, followed by a ready-to-use prompt for a full redesign.
 
