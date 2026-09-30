@@ -63,7 +63,7 @@ STYLE_GUIDE.md             voice and Scripture citation rules
 4. **Friday Night Prayer** (`#friday`): 7:00–10:00 PM at Taurama Aquatic Centre Lounge, the theme *Breaking into the Spirit of Prayer* in five movements, Acts 12:5, transport after prayer
 5. **The Nations** (`#nations`): Papua New Guinea, the Pacific, the nations
 6. **Prophetic Word** (`#prophetic-word`): Prophecies, PNG prophetic words, Global words, and Archive; each word links to its original graphic
-7. **Leadership** (`#leadership`): Pastor Ben Minok and Dr Jonathan David, with biographies in dialogs; *The network* (`#network`), the network churches and their pastors by province (Morobe, East New Britain, West New Britain); and *Those who serve*
+7. **Leadership** (`#leadership`): Pastor Ben Minok and Dr Jonathan David, with biographies in dialogs; *The network* (`#network`), the network churches and their pastors by province (Morobe, East New Britain, West New Britain, New Ireland); and *Those who serve*
 8. **Messages:** the featured message (YouTube loads only on play) and three channels
 9. **Conferences:** three gatherings, dates to be announced
 10. **Begin here** (`#begin`): Believe, Confess, Tell the house; the prayer; Romans 10:9; a short form
